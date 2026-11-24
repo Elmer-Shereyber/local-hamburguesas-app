@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nota de Crédito Electrónica - Burger Local</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        body {
+            background-color: #F1F5F9;
+            color: #0F172A;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .action-toolbar {
+            background: #1E293B;
+            padding: 0.85rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .nc-sheet-wrapper {
+            max-width: 840px;
+            margin: 2rem auto 3rem auto;
+            padding: 0 1rem;
+        }
+
+        .nc-sheet {
+            background: #FFFFFF;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 2.5rem;
+            box-sizing: border-box;
+            border: 1px solid #E2E8F0;
+            font-size: 12px;
+            color: #1E293B;
+        }
+
+        /* Cabecera y Caja RUC */
+        .nc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .nc-company-block {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            flex: 1;
+        }
+
+        .nc-logo-circle {
+            width: 78px;
+            height: 78px;
+            border-radius: 50%;
+            background: #0F172A;
+            color: #FFFFFF;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-weight: 800;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            text-align: center;
+            line-height: 1.2;
+            flex-shrink: 0;
+        }
+
+        .nc-company-info h2 {
+            margin: 0 0 0.35rem 0;
+            font-size: 15px;
+            font-weight: 800;
+            color: #0F172A;
+            letter-spacing: 0.3px;
+        }
+
+        .nc-company-info p {
+            margin: 0 0 0.2rem 0;
+            font-size: 11px;
+            color: #475569;
+        }
+
+        .nc-ruc-box {
+            width: 280px;
+            border: 2px solid #0F172A;
+            border-radius: 12px;
+            padding: 0.85rem 1rem;
+            text-align: center;
+            box-sizing: border-box;
+            background: #FFFFFF;
+        }
+
+        .nc-ruc-box .ruc-num {
+            font-size: 15px;
+            font-weight: 800;
+            color: #0F172A;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.3rem;
+        }
+
+        .nc-ruc-box .doc-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: #0F172A;
+            margin: 0.35rem 0;
+            letter-spacing: 0.5px;
+        }
+
+        .nc-ruc-box .doc-correlativo {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0F172A;
+            letter-spacing: 0.5px;
+        }
+
+        /* Bloque de Información del Cliente y Comprobante Modificado */
+        .nc-info-box {
+            border: 1px solid #CBD5E1;
+            border-radius: 6px;
+            padding: 0.85rem 1rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            font-size: 11.5px;
+            line-height: 1.6;
+        }
+
+        .nc-info-box strong {
+            color: #0F172A;
+        }
+
+        /* Franja de Metadata */
+        .nc-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            border: 1px solid #CBD5E1;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-size: 11px;
+        }
+
+        .nc-meta-cell {
+            border-right: 1px solid #CBD5E1;
+            padding: 0.45rem 0.25rem;
+        }
+
+        .nc-meta-cell:last-child {
+            border-right: none;
+        }
+
+        .nc-meta-cell .label {
+            font-weight: 700;
+            font-size: 9.5px;
+            color: #0F172A;
+            display: block;
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+        }
+
+        .nc-meta-cell .val {
+            color: #334155;
+            font-weight: 500;
+        }
+
+        /* Tabla de Productos */
+        .nc-table-wrapper {
+            border: 1px solid #CBD5E1;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 0.85rem;
+            min-height: 220px;
+        }
+
+        .nc-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11.5px;
+        }
+
+        .nc-table th {
+            border-bottom: 1px solid #CBD5E1;
+            border-right: 1px solid #CBD5E1;
+            background: #F8FAFC;
+            padding: 0.5rem 0.6rem;
+            font-size: 10.5px;
+            font-weight: 700;
+            color: #0F172A;
+            text-align: left;
+        }
+
+        .nc-table th:last-child {
+            border-right: none;
+        }
+
+        .nc-table td {
+            border-right: 1px solid #E2E8F0;
+            padding: 0.55rem 0.6rem;
+            color: #1E293B;
+            vertical-align: top;
+        }
+
+        .nc-table td:last-child {
+            border-right: none;
+        }
+
+        /* Bloque Son y Motivo */
+        .nc-letras-block {
+            margin-bottom: 0.6rem;
+            font-size: 11px;
+            font-weight: 700;
+            color: #0F172A;
+        }
+
+        .nc-motivo-block {
+            margin-bottom: 1.25rem;
+            font-size: 11px;
+            color: #334155;
+            line-height: 1.5;
+        }
+
+        .nc-motivo-block strong {
+            color: #0F172A;
+        }
+
+        /* Totales y QR */
+        .nc-bottom-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 2rem;
+            margin-top: 1rem;
+            padding-top: 0.75rem;
+        }
+
+        .nc-qr-area {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nc-qr-canvas-box {
+            width: 90px;
+            height: 90px;
+            border: 1px solid #CBD5E1;
+            padding: 4px;
+            background: #FFFFFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .nc-totals-box {
+            width: 260px;
+            font-size: 12px;
+            border-collapse: collapse;
+        }
+
+        .nc-totals-box tr td {
+            padding: 0.35rem 0.5rem;
+        }
+
+        .nc-totals-box tr td:first-child {
+            font-weight: 600;
+            color: #334155;
+            text-align: left;
+        }
+
+        .nc-totals-box tr td:last-child {
+            font-weight: 700;
+            color: #0F172A;
+            text-align: right;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        .nc-legal-footer {
+            margin-top: 2rem;
+            border-top: 1px solid #E2E8F0;
+            padding-top: 0.85rem;
+            text-align: center;
+            font-size: 9.5px;
+            color: #64748B;
+            line-height: 1.4;
+        }
+
+        /* Impresión / Guardar en PDF */
+        @media print {
+            body {
+                background: #FFFFFF !important;
+                color: #000000 !important;
+            }
+            .action-toolbar {
+                display: none !important;
+            }
+            .nc-sheet-wrapper {
+                margin: 0 !important;
+                padding: 0 !important;
+                max-width: 100% !important;
+            }
+            .nc-sheet {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+            }
+            @page {
+                size: A4 portrait;
+                margin: 10mm 12mm;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barra de acciones superior -->
+    <div class="action-toolbar">
+        <a href="devoluciones.html" class="btn" style="background:#334155; color:#F8FAFC; text-decoration:none; padding:0.45rem 0.85rem; font-size:0.85rem; font-weight:600;">
+            ← Volver a Devoluciones
+        </a>
+        <div style="display:flex; gap:0.75rem;">
+            <button type="button" id="btn-imprimir-nc" class="btn btn-primary" style="padding:0.45rem 1rem; font-size:0.88rem; font-weight:700;">
+                🖨️ Imprimir / Guardar como PDF
+            </button>
+        </div>
+    </div>
+
+    <div class="nc-sheet-wrapper">
+        <div class="nc-sheet" id="nc-document">
+            
+            <p id="nc-loading" style="text-align:center; padding:3rem; font-size:14px; color:#64748B;">
+                Cargando Nota de Crédito Electrónica...
+            </p>
+
+            <div id="nc-content" style="display:none;">
+                <!-- 1. CABECERA -->
+                <div class="nc-header">
+                    <div class="nc-company-block">
+                        <div class="nc-logo-circle">
+                            BURGER<br>LOCAL
+                        </div>
+                        <div class="nc-company-info">
+                            <h2 id="nc-emisor-razon">BURGER LOCAL S.A.C.</h2>
+                            <p id="nc-emisor-direccion">AV. PRINCIPAL 123 - LOCAL 1</p>
+                            <p id="nc-emisor-contacto">TRUJILLO - LA LIBERTAD - PERÚ | contacto@burgerlocal.pe</p>
+                        </div>
+                    </div>
+
+                    <div class="nc-ruc-box">
+                        <div class="ruc-num" id="nc-emisor-ruc">R.U.C. 20123456789</div>
+                        <div class="doc-title">NOTA DE CRÉDITO ELECTRÓNICA</div>
+                        <div class="doc-correlativo" id="nc-numero-serie">N° BC01 - 00000001</div>
+                        <div id="nc-badge-tipo-devolucion" style="display:inline-block; margin-top:0.35rem; padding:0.2rem 0.6rem; border-radius:4px; font-size:10px; font-weight:800; background:#EFF6FF; color:#1E40AF; border:1px solid #BFDBFE;">
+                            DEVOLUCIÓN PARCIAL
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. DATOS DEL CLIENTE Y COMPROBANTE MODIFICADO (ANEXO III R.S. 114-2019/SUNAT) -->
+                <div class="nc-info-box">
+                    <div>
+                        <div style="font-weight:700; text-transform:uppercase; color:#0F172A; margin-bottom:0.25rem;">DATOS DEL ADQUIRENTE / CLIENTE</div>
+                        <div><strong>Señor(es)</strong> &nbsp;: <span id="nc-cliente-nombre">PÚBLICO GENERAL</span></div>
+                        <div><strong id="nc-cliente-doc-label">Tipo y N° Doc.</strong>: <span id="nc-cliente-doc-num">---</span></div>
+                    </div>
+                    <div>
+                        <div style="font-weight:700; text-transform:uppercase; color:#0F172A; margin-bottom:0.25rem;">DOCUMENTO QUE MODIFICA</div>
+                        <div><strong>Denominación</strong> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; : <span id="nc-modifica-tipo">BOLETA DE VENTA ELECTRÓNICA</span></div>
+                        <div><strong>Fecha emisión boleta</strong> : <span id="nc-modifica-fecha">--/--/----</span></div>
+                        <div><strong>Serie y Nro.</strong> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;: <span id="nc-modifica-numero" style="font-family:monospace; font-weight:700;">---</span></div>
+                    </div>
+                </div>
+
+                <!-- 3. FRANJA METADATA APLICABLE A NOTA DE CRÉDITO SOBRE BOLETA -->
+                <div class="nc-meta-grid" style="grid-template-columns: repeat(4, 1fr);">
+                    <div class="nc-meta-cell">
+                        <span class="label">FECHA DE EMISIÓN</span>
+                        <span class="val" id="nc-meta-fecha-emision">--/--/----</span>
+                    </div>
+                    <div class="nc-meta-cell">
+                        <span class="label">TIPO DE MONEDA</span>
+                        <span class="val">SOLES (PEN)</span>
+                    </div>
+                    <div class="nc-meta-cell">
+                        <span class="label">TIPO NOTA (CAT. 09)</span>
+                        <span class="val" id="nc-meta-tipo-nota" style="font-weight:700; color:#1E40AF;">07 - DEVOLUCIÓN POR ÍTEM</span>
+                    </div>
+                    <div class="nc-meta-cell">
+                        <span class="label">PEDIDO INTERNO</span>
+                        <span class="val" id="nc-meta-pedido">#----</span>
+                    </div>
+                </div>
+
+                <!-- 4. TABLA DE PRODUCTOS DEVUELTOS -->
+                <div class="nc-table-wrapper">
+                    <table class="nc-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 10%; text-align: center;">CANT.</th>
+                                <th style="width: 12%; text-align: center;">U.M</th>
+                                <th style="width: 48%;">DESCRIPCIÓN DEL ÍTEM DEVUELTO</th>
+                                <th style="width: 15%; text-align: right;">VALOR UNIT.</th>
+                                <th style="width: 15%; text-align: right;">PRECIO TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="nc-items-tbody">
+                            <!-- Filas dinámicas -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 5. SON Y MOTIVO DE EMISIÓN (CATÁLOGO N.° 09 SUNAT) -->
+                <div class="nc-letras-block" id="nc-son-letras">
+                    SON: CERO CON 00/100 SOLES
+                </div>
+
+                <div class="nc-motivo-block" style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:6px; padding:0.65rem 0.85rem;">
+                    <div><strong>TIPO DE NOTA DE CRÉDITO (CAT. 09 SUNAT):</strong> <span id="nc-cat09-tipo" style="font-weight:700; color:#1E40AF;">07 - DEVOLUCIÓN POR ÍTEM</span></div>
+                    <div style="margin-top:0.25rem;"><strong>MOTIVO DEL RECLAMO / SUSTENTO :</strong> <span id="nc-motivo-texto">---</span></div>
+                </div>
+
+                <!-- 6. TOTALES Y CÓDIGO QR -->
+                <div class="nc-bottom-section">
+                    <div class="nc-qr-area">
+                        <div class="nc-qr-canvas-box" id="nc-qr-container">
+                            <!-- SVG QR generado dinámicamente -->
+                        </div>
+                        <div style="font-size:10px; color:#64748B; max-width:280px; line-height:1.4;">
+                            <strong style="color:#0F172A;">Simulación SEE - SUNAT</strong><br>
+                            Representación técnica del código de barras bidimensional (QR) según estándar del Sistema de Emisión Electrónica.
+                        </div>
+                    </div>
+
+                    <table class="nc-totals-box">
+                        <tr>
+                            <td>OP. GRAVADA (S/)</td>
+                            <td id="nc-total-gravada">0.00</td>
+                        </tr>
+                        <tr>
+                            <td>TOTAL IGV 18% (S/)</td>
+                            <td id="nc-total-igv">0.00</td>
+                        </tr>
+                        <tr style="border-top:1px solid #CBD5E1;">
+                            <td style="font-size:13px; font-weight:700;">IMPORTE TOTAL (S/)</td>
+                            <td id="nc-total-importe" style="font-size:14px; color:#0F172A;">0.00</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- 7. PIE LEGAL Y ACLARACIÓN ACADÉMICA HONESTA -->
+                <div class="nc-legal-footer">
+                    <div style="font-weight:700; color:#334155; font-size:10.5px; margin-bottom:0.25rem; letter-spacing:0.3px;">
+                        DOCUMENTO DE DEMOSTRACIÓN – SIN VALIDEZ TRIBUTARIA
+                    </div>
+                    Representación impresa de Nota de Crédito Electrónica emitida con fines académicos (Proyecto Burger Local).<br>
+                    Estructurado según especificaciones del Catálogo N.° 09 y el Anexo III de la Resolución de Superintendencia N.° 114-2019/SUNAT.
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="module" src="nota-credito.js"></script>
+</body>
+</html>

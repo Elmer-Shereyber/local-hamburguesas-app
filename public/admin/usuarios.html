@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionar Usuarios - Burger Local</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: #F8FAFC;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            text-align: left;
+            transition: all var(--transition-fast);
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+            display: block;
+        }
+
+        .stat-card .stat-val {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1;
+        }
+
+        .stat-card.permitidas { border-left: 4px solid #6366F1; }
+        .stat-card.activas { border-left: 4px solid #10B981; }
+        .stat-card.disponibles { border-left: 4px solid #F59E0B; }
+
+        /* Tarjetas destacadas de roles */
+        .roles-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .role-overview-card {
+            background: #FFFFFF;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all var(--transition-fast);
+            position: relative;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .role-overview-card.activa {
+            border-color: #10B981;
+            background: #F0FDF4;
+        }
+
+        .role-overview-card.vacia {
+            border-color: #E2E8F0;
+            background: #F8FAFC;
+        }
+
+        .role-icon-box {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            flex-shrink: 0;
+        }
+
+        .role-icon-box.cajera {
+            background: #EFF6FF;
+            color: #2563EB;
+        }
+
+        .role-icon-box.cocina {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+
+        .modal-card {
+            background: #fff;
+            border-radius: var(--radius-lg);
+            width: 480px;
+            max-width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .validation-hint {
+            font-size: 0.78rem;
+            margin-top: 0.3rem;
+            display: block;
+            line-height: 1.3;
+        }
+
+        .validation-hint.error {
+            color: #DC2626;
+            font-weight: 600;
+        }
+
+        .validation-hint.success {
+            color: #059669;
+            font-weight: 600;
+        }
+
+        .validation-hint.muted {
+            color: var(--text-muted);
+        }
+
+        .preview-box {
+            background: #F8FAFC;
+            border: 1px dashed #CBD5E1;
+            border-radius: var(--radius-md);
+            padding: 0.75rem;
+            font-size: 0.85rem;
+            color: #334155;
+            margin-top: 0.5rem;
+        }
+
+        .usuario-card-mobile {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            box-shadow: var(--shadow-sm);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Burger Local - Administrador</h1>
+        <div class="user-info">
+            <span id="current-user"></span>
+            <button id="btn-logout" class="btn-logout">Cerrar Sesión</button>
+        </div>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="index.html">Panel General</a></li>
+            <li><a href="usuarios.html" class="active">Gestionar Usuarios</a></li>
+            <li><a href="productos.html">Gestionar Productos</a></li>
+            <li><a href="devoluciones.html">Procesar Devoluciones</a></li>
+            <li><a href="reportes.html">Ganancias e Incidencias</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <!-- Encabezado con título informativo -->
+            <div class="mb-1">
+                <h2 style="margin:0; border:none; padding:0;">Gestión de Cuentas Operativas (Cajera y Cocina)</h2>
+                <p style="margin:0.25rem 0 0 0; color:var(--text-muted); font-size:0.85rem;">
+                    Administra el personal que tiene acceso al sistema. Por regla de negocio (HU-10), se permite como máximo una cuenta activa de Cajera y una de Cocina.
+                </p>
+            </div>
+
+            <!-- KPIs de control de cuentas (HU-10 CA01) -->
+            <div class="stats-grid">
+                <div class="stat-card permitidas">
+                    <span class="stat-label">Cuentas Permitidas</span>
+                    <span class="stat-val">2</span>
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">1 Cajera y 1 Cocina</div>
+                </div>
+                <div class="stat-card activas">
+                    <span class="stat-label">Cuentas Activas</span>
+                    <span class="stat-val" id="stat-activas">0 / 2</span>
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">Habilitadas para operar</div>
+                </div>
+                <div class="stat-card disponibles">
+                    <span class="stat-label">Roles Disponibles</span>
+                    <span class="stat-val" id="stat-disponibles">2</span>
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">Roles libres para crear</div>
+                </div>
+            </div>
+
+            <!-- Tarjetas destacadas de los dos roles operativos (CA01, CA06) -->
+            <h3 style="font-size:1.05rem; margin-bottom:0.75rem; color:var(--text-main);">Estado de los Roles Operativos</h3>
+            <div class="roles-cards-grid">
+                
+                <!-- CARD ROL: CAJERA -->
+                <div class="role-overview-card" id="card-rol-cajera">
+                    <div>
+                        <div class="d-flex justify-between align-center mb-1">
+                            <div class="d-flex align-center gap-1">
+                                <div class="role-icon-box cajera">💳</div>
+                                <div>
+                                    <h4 style="margin:0; font-size:1.15rem; color:#1E3A8A;">Cajera</h4>
+                                    <span style="font-size:0.78rem; color:var(--text-muted);">Registro de pedidos, cobros e incidencias</span>
+                                </div>
+                            </div>
+                            <div id="badge-estado-cajera">
+                                <span class="badge" style="background:#CBD5E1; color:#334155; font-size:0.75rem;">No Creada</span>
+                            </div>
+                        </div>
+
+                        <div id="info-cajera-body" style="font-size:0.88rem; line-height:1.6; padding:0.5rem 0; color:#334155;">
+                            <!-- Dinámico según estado -->
+                        </div>
+                    </div>
+
+                    <div style="margin-top:1rem; border-top:1px dashed var(--border-color); padding-top:0.85rem;" id="acciones-cajera">
+                        <!-- Botón Crear o Eliminar -->
+                    </div>
+                </div>
+
+                <!-- CARD ROL: COCINA -->
+                <div class="role-overview-card" id="card-rol-cocina">
+                    <div>
+                        <div class="d-flex justify-between align-center mb-1">
+                            <div class="d-flex align-center gap-1">
+                                <div class="role-icon-box cocina">👨‍🍳</div>
+                                <div>
+                                    <h4 style="margin:0; font-size:1.15rem; color:#92400E;">Área de Cocina</h4>
+                                    <span style="font-size:0.78rem; color:var(--text-muted);">Visualización y preparación de comandas</span>
+                                </div>
+                            </div>
+                            <div id="badge-estado-cocina">
+                                <span class="badge" style="background:#CBD5E1; color:#334155; font-size:0.75rem;">No Creada</span>
+                            </div>
+                        </div>
+
+                        <div id="info-cocina-body" style="font-size:0.88rem; line-height:1.6; padding:0.5rem 0; color:#334155;">
+                            <!-- Dinámico según estado -->
+                        </div>
+                    </div>
+
+                    <div style="margin-top:1rem; border-top:1px dashed var(--border-color); padding-top:0.85rem;" id="acciones-cocina">
+                        <!-- Botón Crear o Eliminar -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Tabla resumen de cuentas activas -->
+            <div class="d-flex justify-between align-center mb-1">
+                <h3 style="font-size:1.05rem; margin:0; color:var(--text-main);">Cuentas Operativas Registradas</h3>
+                <span style="font-size:0.8rem; color:var(--text-muted);">El perfil de Administrador es predefinido y no se lista aquí (CA01)</span>
+            </div>
+
+            <!-- Tabla Desktop -->
+            <div class="table-responsive d-none-mobile">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 18%;">Rol del Sistema</th>
+                            <th style="width: 20%;">Nombre de Usuario</th>
+                            <th style="width: 25%;">Identificador de Login (Interno)</th>
+                            <th style="width: 15%;">Fecha de Alta</th>
+                            <th style="width: 10%; text-align: center;">Estado</th>
+                            <th style="width: 12%; text-align: right;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usuarios-tbody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                Cargando cuentas de usuarios...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Lista Mobile -->
+            <div id="usuarios-mobile-list" class="d-block-mobile" style="display: none; gap: 0.75rem;">
+                <!-- Dinámico en móviles -->
+            </div>
+
+            <!-- Aviso informativo de HU-10 CA08 -->
+            <div style="margin-top:2rem; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:var(--radius-md); padding:0.85rem 1rem; font-size:0.82rem; color:#475569; line-height:1.5;">
+                ℹ️ <strong>Integridad del Historial de Operaciones (HU-10 CA08):</strong> Eliminar o crear nuevamente una cuenta no borra ni modifica ningún pedido, reposición ni devolución ya registrados en el sistema. Los registros conservan el nombre de usuario original como dato histórico.
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL CREAR USUARIO (HU-10 CA01, CA02, CA03, CA04, CA05) -->
+    <div id="modal-crear-usuario" class="modal-overlay">
+        <div class="modal-card">
+            <div class="d-flex justify-between align-center mb-1">
+                <h3 id="modal-crear-titulo" style="margin:0; font-size:1.25rem;">➕ Crear Cuenta</h3>
+                <button type="button" id="btn-cerrar-modal-crear" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted); line-height:1;">&times;</button>
+            </div>
+
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.25rem; line-height:1.4;">
+                Ingresa el nombre de usuario y contraseña para esta cuenta. El personal iniciará sesión en su pantalla con estas credenciales.
+            </p>
+
+            <form id="form-crear-usuario">
+                <!-- 1. Rol Operativo Fijo (determinado por el botón de Cajera o Cocina presionado) -->
+                <div class="form-group mb-1">
+                    <label style="font-weight:700; font-size:0.9rem;">
+                        Rol Operativo Asignado
+                    </label>
+                    <div id="modal-rol-display" style="display:flex; align-items:center; gap:0.5rem; padding:0.6rem 0.85rem; border-radius:var(--radius-md); background:#EFF6FF; border:1px solid #BFDBFE; font-weight:700; font-size:0.95rem; color:#1E40AF;">
+                        <span id="modal-rol-icono">💳</span>
+                        <span id="modal-rol-nombre">Cajera (Toma de pedidos y cobros)</span>
+                    </div>
+                    <input type="hidden" id="crear-rol" value="cajera">
+                    <span class="validation-hint muted">El rol está definido por la tarjeta seleccionada (Cajera o Cocina).</span>
+                </div>
+
+                <!-- 2. Nombre de usuario (CA03: solo letras y números, 4-20 chars; CA04: único en tiempo real) -->
+                <div class="form-group mb-1">
+                    <label for="crear-usuario-nombre" style="font-weight:700; font-size:0.9rem;">
+                        Nombre de Usuario *
+                    </label>
+                    <input type="text" id="crear-usuario-nombre" maxlength="20" placeholder="Ej. cajera1 o cocinero" required autocomplete="off"
+                           style="width:100%; padding:0.6rem; border-radius:var(--radius-md); border:1px solid var(--border-color); font-size:0.95rem;">
+                    
+                    <span id="hint-usuario-formato" class="validation-hint muted">
+                        Debe tener entre 4 y 20 caracteres (solo letras y números, sin espacios ni símbolos).
+                    </span>
+                    <span id="hint-usuario-status" class="validation-hint" style="display:none;"></span>
+
+                    <!-- Previsualización de login con dominio interno (CA05) -->
+                    <div class="preview-box">
+                        <strong>Identificador técnico interno:</strong><br>
+                        <span id="preview-correo" style="font-family:monospace; color:#1E40AF; font-size:0.95rem;">@burger.local</span>
+                        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">
+                            (El personal iniciará sesión simplemente ingresando su nombre de usuario, sin necesidad de escribir el dominio).
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Contraseña (CA03: mínimo 6 caracteres) -->
+                <div class="form-group mb-1">
+                    <label for="crear-usuario-password" style="font-weight:700; font-size:0.9rem;">
+                        Contraseña de Acceso *
+                    </label>
+                    <div style="position:relative;">
+                        <input type="password" id="crear-usuario-password" minlength="6" placeholder="Mínimo 6 caracteres" required autocomplete="new-password"
+                               style="width:100%; padding:0.6rem 2.5rem 0.6rem 0.6rem; border-radius:var(--radius-md); border:1px solid var(--border-color); font-size:0.95rem;">
+                        <button type="button" id="btn-toggle-password" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:1.1rem; color:var(--text-muted);" title="Mostrar/Ocultar contraseña">
+                            👁️
+                        </button>
+                    </div>
+                    <span id="hint-password-status" class="validation-hint muted">
+                        Mínimo 6 caracteres (números, letras o caracteres).
+                    </span>
+                </div>
+
+                <div class="d-flex justify-between gap-1 mt-1" style="border-top:1px solid var(--border-color); padding-top:1rem;">
+                    <button type="button" id="btn-cancelar-crear" class="btn btn-secondary" style="flex:1;">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="btn-confirmar-crear" class="btn btn-primary" style="flex:1;" disabled>
+                        Crear Cuenta
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMAR ELIMINACIÓN (HU-10 CA06, CA07, CA08) -->
+    <div id="modal-eliminar-usuario" class="modal-overlay">
+        <div class="modal-card" style="width:440px;">
+            <div class="d-flex align-center gap-1 mb-1" style="color:#DC2626;">
+                <span style="font-size:1.8rem;">⚠️</span>
+                <h3 style="margin:0; font-size:1.2rem; color:#DC2626;">Eliminar Cuenta Operativa</h3>
+            </div>
+
+            <p style="font-size:0.9rem; line-height:1.5; color:#334155;">
+                ¿Estás seguro de que deseas eliminar la cuenta de <strong id="eliminar-rol-txt">Cajera</strong> (Usuario: <strong id="eliminar-usuario-txt" style="font-family:monospace;">---</strong>)?
+            </p>
+
+            <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:var(--radius-md); padding:0.75rem; font-size:0.82rem; color:#991B1B; line-height:1.4; margin-bottom:1.25rem;">
+                <strong>Efectos de esta acción:</strong><br>
+                • <strong>Cierre forzado:</strong> Si el usuario tiene una sesión activa abierta en otro dispositivo, se le cerrará automáticamente en su próxima acción (CA07).<br>
+                • <strong>Historial seguro:</strong> Ningún pedido o comprobante emitido será modificado ni borrado (CA08).<br>
+                • <strong>Rol liberado:</strong> El rol quedará inmediatamente disponible para crear una nueva cuenta y el nombre podrá reutilizarse (CA06).
+            </div>
+
+            <div class="d-flex justify-between gap-1">
+                <button type="button" id="btn-cancelar-eliminar" class="btn btn-secondary" style="flex:1;">
+                    Cancelar
+                </button>
+                <button type="button" id="btn-confirmar-eliminar" class="btn" style="flex:1; background:#DC2626; color:#fff; font-weight:700;">
+                    Sí, Eliminar Cuenta
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="usuarios.js"></script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emitir Comprobante - Cajera</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        .resumen-caja {
+            background: var(--bg-main);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Burger Local - Cajera</h1>
+        <div class="user-info">
+            <span id="current-user"></span>
+            <button id="btn-logout" class="btn-logout">Cerrar Sesión</button>
+        </div>
+    </header>
+    
+
+    <div class="container" style="max-width: 600px;">
+        <div class="card">
+            <h2>Emitir Comprobante</h2>
+            
+            <div class="resumen-caja">
+                <h3 style="margin-top:0; font-size: 1.1rem;">Resumen del Pedido</h3>
+                <div id="resumen-productos" style="font-size: 0.9rem; margin-bottom: 0.5rem; color: #555;"></div>
+                <div class="d-flex justify-between" style="font-weight: bold;">
+                    <span>Total a cobrar:</span>
+                    <span id="resumen-total">S/ 0.00</span>
+                </div>
+                <div style="font-size: 0.85rem; color: #666; margin-top: 0.5rem;">
+                    Modalidad: <span id="resumen-modalidad"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Tipo de Comprobante</label>
+                <div class="d-flex gap-1">
+                    <label style="font-weight: normal;"><input type="radio" name="tipo-comprobante" value="Boleta" checked> Boleta</label>
+                    <label style="font-weight: normal;"><input type="radio" name="tipo-comprobante" value="Factura"> Factura</label>
+                </div>
+            </div>
+
+            <!-- Formularios Boleta -->
+            <div id="panel-boleta">
+                <div class="form-group">
+                    <label>Tipo de Boleta</label>
+                    <select id="tipo-boleta">
+                        <option value="con-dni">Boleta con DNI</option>
+                        <option value="simple">Boleta simple (Sin DNI)</option>
+                    </select>
+                </div>
+
+                <div id="panel-dni" class="form-group">
+                    <label for="dni-cliente">DNI del Cliente</label>
+                    <div class="d-flex gap-1">
+                        <input type="text" id="dni-cliente" maxlength="8" placeholder="Ingrese 8 dígitos">
+                        <button type="button" id="btn-buscar-dni" class="btn btn-secondary">Buscar</button>
+                    </div>
+                </div>
+
+                <div id="panel-nombre-dni" class="form-group">
+                    <label for="nombre-cliente">Nombre Completo</label>
+                    <input type="text" id="nombre-cliente" disabled placeholder="Se autocompletará">
+                </div>
+            </div>
+
+            <!-- Formularios Factura -->
+            <div id="panel-factura" style="display: none;">
+                <div class="form-group">
+                    <label for="ruc-cliente">RUC del Cliente</label>
+                    <div class="d-flex gap-1">
+                        <input type="text" id="ruc-cliente" maxlength="11" placeholder="Ingrese 11 dígitos">
+                        <button type="button" id="btn-buscar-ruc" class="btn btn-secondary">Buscar</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="razon-social">Razón Social</label>
+                    <input type="text" id="razon-social" disabled placeholder="Se autocompletará">
+                </div>
+                
+                <div class="form-group">
+                    <label for="domicilio-fiscal">Domicilio Fiscal</label>
+                    <input type="text" id="domicilio-fiscal" disabled placeholder="Se autocompletará">
+                </div>
+            </div>
+
+            <div class="d-flex justify-between mt-2">
+                <button id="btn-cancelar" class="btn" style="background:#dc3545; color:#fff;">Cancelar Pedido</button>
+                <button id="btn-emitir" class="btn btn-primary" disabled>Emitir y Finalizar</button>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="emitir-comprobante.js"></script>
+</body>
+</html>

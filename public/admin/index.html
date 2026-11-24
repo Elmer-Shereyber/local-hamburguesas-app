@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Burger Local</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        .admin-dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .admin-card-action {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-fast);
+            text-decoration: none;
+            color: inherit;
+        }
+        .admin-card-action:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary-color);
+        }
+        .admin-icon-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: #FEE2E2;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Burger Local - Administrador</h1>
+        <div class="user-info">
+            <span id="current-user"></span>
+            <button id="btn-logout" class="btn-logout">Cerrar Sesión</button>
+        </div>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="index.html" class="active">Panel General</a></li>
+            <li><a href="usuarios.html">Gestionar Usuarios</a></li>
+            <li><a href="productos.html">Gestionar Productos</a></li>
+            <li><a href="devoluciones.html">Procesar Devoluciones</a></li>
+            <li><a href="reportes.html">Ganancias e Incidencias</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <h2>Bienvenido al Panel de Administración</h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+                Desde aquí puedes gestionar los accesos de personal, mantener actualizado el catálogo de productos y supervisar las ventas e incidencias del negocio.
+            </p>
+
+            <div class="admin-dashboard-grid">
+                <!-- Módulo Usuarios (HU-10) -->
+                <a href="usuarios.html" class="admin-card-action">
+                    <div>
+                        <div class="admin-icon-circle">👥</div>
+                        <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Gestionar Usuarios</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+                            Crear o eliminar cuentas operativas para el personal de <strong>Cajera</strong> y <strong>Cocina</strong>.
+                        </p>
+                    </div>
+                    <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary-color); margin-top: 1rem;">Acceder al módulo →</span>
+                </a>
+
+                <!-- Módulo Productos (HU-11) -->
+                <a href="productos.html" class="admin-card-action">
+                    <div>
+                        <div class="admin-icon-circle" style="background: #FEF3C7; color: #D97706;">🍔</div>
+                        <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Gestionar Productos</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+                            Registrar nuevos productos, modificar precios y nombres, y gestionar bajas del catálogo.
+                        </p>
+                    </div>
+                    <span style="font-size: 0.85rem; font-weight: 600; color: #D97706; margin-top: 1rem;">Acceder al módulo →</span>
+                </a>
+
+                <!-- Módulo Devoluciones (HU-06) -->
+                <a href="devoluciones.html" class="admin-card-action">
+                    <div>
+                        <div class="admin-icon-circle" style="background: #EFF6FF; color: var(--accent-color);">💸</div>
+                        <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Procesar Devoluciones</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+                            Revisar solicitudes de reembolso generadas por cajera y adjuntar el comprobante de depósito bancario.
+                        </p>
+                    </div>
+                    <span style="font-size: 0.85rem; font-weight: 600; color: var(--accent-color); margin-top: 1rem;">Acceder al módulo →</span>
+                </a>
+
+                <!-- Módulo Reportes (HU-12) -->
+                <a href="reportes.html" class="admin-card-action">
+                    <div>
+                        <div class="admin-icon-circle" style="background: #D1FAE5; color: var(--success-color);">📊</div>
+                        <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Ganancias e Incidencias</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+                            Consultar ventas por rango de fechas, ingresos netos, métodos de pago y métricas de reclamos.
+                        </p>
+                    </div>
+                    <span style="font-size: 0.85rem; font-weight: 600; color: var(--success-color); margin-top: 1rem;">Acceder al módulo →</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionar Productos - Burger Local</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: #F8FAFC;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            text-align: left;
+            transition: all var(--transition-fast);
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+            display: block;
+        }
+
+        .stat-card .stat-val {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1;
+        }
+
+        .stat-card.prep { border-left: 4px solid #F59E0B; }
+        .stat-card.inmed { border-left: 4px solid #10B981; }
+        .stat-card.disp { border-left: 4px solid #3B82F6; }
+
+        .type-radio-card {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            background: #FFFFFF;
+        }
+
+        .type-radio-card:hover {
+            border-color: var(--primary-color);
+            background: #FEF2F2;
+        }
+
+        .type-radio-card input[type="radio"] {
+            margin-top: 0.25rem;
+            width: auto;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+
+        .modal-card {
+            background: #fff;
+            border-radius: var(--radius-lg);
+            width: 520px;
+            max-width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .producto-card-mobile {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            box-shadow: var(--shadow-sm);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Burger Local - Administrador</h1>
+        <div class="user-info">
+            <span id="current-user"></span>
+            <button id="btn-logout" class="btn-logout">Cerrar Sesión</button>
+        </div>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="index.html">Panel General</a></li>
+            <li><a href="usuarios.html">Gestionar Usuarios</a></li>
+            <li><a href="productos.html" class="active">Gestionar Productos</a></li>
+            <li><a href="devoluciones.html">Procesar Devoluciones</a></li>
+            <li><a href="reportes.html">Ganancias e Incidencias</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <!-- Encabezado con título y botón de creación -->
+            <div class="d-flex justify-between align-center mb-1 flex-wrap gap-1">
+                <div>
+                    <h2 style="margin:0; border:none; padding:0;">Gestión de Productos del Menú</h2>
+                    <p style="margin:0; color:var(--text-muted); font-size:0.85rem;">
+                        Administra el catálogo de hamburguesas, acompañamientos y bebidas disponibles para venta y cocina.
+                    </p>
+                </div>
+                <div>
+                    <button type="button" id="btn-abrir-crear" class="btn btn-primary" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.6rem 1.1rem; font-weight:700;">
+                        <span>➕</span> Nuevo Producto
+                    </button>
+                </div>
+            </div>
+
+            <!-- Resumen de Métricas del Menú -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-label">Total Productos</span>
+                    <span class="stat-val" id="stat-total">0</span>
+                </div>
+                <div class="stat-card prep">
+                    <span class="stat-label">Con Preparación</span>
+                    <span class="stat-val" id="stat-prep" style="color:#D97706;">0</span>
+                </div>
+                <div class="stat-card inmed">
+                    <span class="stat-label">Servicio Inmediato</span>
+                    <span class="stat-val" id="stat-inmed" style="color:#059669;">0</span>
+                </div>
+                <div class="stat-card disp">
+                    <span class="stat-label">Disponibles Cocina</span>
+                    <span class="stat-val" id="stat-disp" style="color:#2563EB;">0</span>
+                </div>
+            </div>
+
+            <!-- Filtros y Búsqueda -->
+            <div class="d-flex justify-between align-center mb-1 flex-wrap gap-1" style="background:#F8FAFC; border:1px solid var(--border-color); padding:0.75rem 1rem; border-radius:var(--radius-md);">
+                <div style="flex:1; max-width:320px; min-width:220px;">
+                    <input type="text" id="buscar-producto" placeholder="🔍 Buscar por nombre de producto..." style="width:100%; padding:0.5rem 0.75rem; border:1px solid var(--border-color); border-radius:var(--radius-md); font-size:0.88rem;">
+                </div>
+                <div class="d-flex align-center gap-1">
+                    <label for="filtro-tipo" style="font-size:0.85rem; font-weight:600; color:var(--text-muted); margin:0;">Tipo:</label>
+                    <select id="filtro-tipo" style="padding:0.45rem 0.75rem; font-size:0.85rem; border-radius:var(--radius-md); border:1px solid var(--border-color); min-width:170px;">
+                        <option value="todos">Todos los tipos</option>
+                        <option value="Con preparación">Con preparación</option>
+                        <option value="Servicio inmediato">Servicio inmediato</option>
+                    </select>
+                </div>
+            </div>
+
+            <p id="loading-msg" class="text-center" style="padding:2rem; color:var(--text-muted);">Cargando catálogo de productos...</p>
+
+            <!-- Tabla Desktop -->
+            <div class="table-responsive" id="table-wrapper" style="display:none; border:1px solid var(--border-color); border-radius:var(--radius-md); overflow:hidden;">
+                <table class="pedidos-modern-table" id="tabla-productos">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Tipo de Producto</th>
+                            <th style="text-align:right;">Precio de Venta</th>
+                            <th style="text-align:center;">Disponibilidad (Cocina)</th>
+                            <th style="text-align:right;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productos-tbody">
+                        <!-- Filas dinámicas -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Lista de Cards Móvil (<= 820px) -->
+            <div id="productos-mobile-list" class="mobile-cards-list" style="display:none; flex-direction:column; gap:0.75rem;">
+                <!-- Dinámico en móvil -->
+            </div>
+
+            <p id="no-results-msg" class="text-center" style="display:none; color:var(--text-muted); padding:2rem;">
+                No se encontraron productos registrados en el menú.
+            </p>
+        </div>
+    </div>
+
+    <!-- MODAL 1: CREAR PRODUCTO (CA01, CA02, CA03, CA05) -->
+    <div id="modal-crear" class="modal-overlay">
+        <div class="modal-card">
+            <div class="d-flex justify-between align-center mb-1" style="border-bottom:1px solid var(--border-color); padding-bottom:0.75rem;">
+                <h3 style="margin:0; font-size:1.15rem; color:#1E293B;">➕ Registrar Nuevo Producto</h3>
+                <button type="button" id="btn-cerrar-modal-crear" class="btn" style="padding:0.2rem 0.6rem; background:#eee;">✕</button>
+            </div>
+
+            <form id="form-crear-producto">
+                <div class="form-group mb-1">
+                    <label for="crear-nombre"><strong>Nombre del Producto *</strong></label>
+                    <input type="text" id="crear-nombre" maxlength="60" required placeholder="ej. Hamburguesa Royal Especial" autocomplete="off">
+                    <div id="crear-nombre-feedback" style="font-size:0.78rem; margin-top:0.25rem;"></div>
+                </div>
+
+                <div class="form-group mb-1">
+                    <label for="crear-precio"><strong>Precio de Venta (S/) *</strong></label>
+                    <input type="number" id="crear-precio" min="0.10" step="0.10" required placeholder="0.00" autocomplete="off">
+                    <small style="color:var(--text-muted); font-size:0.75rem;">Solo valores positivos mayores a cero.</small>
+                </div>
+
+                <div class="form-group mb-1">
+                    <label><strong>Tipo de Producto *</strong> <span style="font-size:0.78rem; color:#DC2626; font-weight:normal;">(No modificable después de crear)</span></label>
+                    <div style="display:flex; flex-direction:column; gap:0.6rem; margin-top:0.4rem;">
+                        <label class="type-radio-card">
+                            <input type="radio" name="crear-tipo" value="Con preparación" checked>
+                            <div>
+                                <strong style="font-size:0.9rem; color:#0F172A;">Con preparación</strong>
+                                <div style="font-size:0.78rem; color:var(--text-muted); line-height:1.3; margin-top:0.15rem;">
+                                    Hamburguesas, salchipapas, papas fritas. Requiere elaboración en cocina: <em>Pendiente → En preparación → Listo</em>.
+                                </div>
+                            </div>
+                        </label>
+                        <label class="type-radio-card">
+                            <input type="radio" name="crear-tipo" value="Servicio inmediato">
+                            <div>
+                                <strong style="font-size:0.9rem; color:#0F172A;">Servicio inmediato</strong>
+                                <div style="font-size:0.78rem; color:var(--text-muted); line-height:1.3; margin-top:0.15rem;">
+                                    Gaseosas, agua, jugos, snacks envasados. Se sirve al instante sin pasar por cocción: <em>Pendiente → Listo</em>.
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div style="background:#F0FDF4; border:1px solid #BBF7D0; border-radius:var(--radius-md); padding:0.65rem 0.85rem; margin-bottom:1rem; font-size:0.8rem; color:#166534;">
+                    ℹ️ <strong>Disponibilidad:</strong> El producto se registrará como <strong>Disponible</strong> por defecto. El área de cocina podrá desactivarlo si se agota.
+                </div>
+
+                <div class="d-flex justify-between gap-1 mt-1" style="border-top:1px solid var(--border-color); padding-top:0.75rem;">
+                    <button type="button" id="btn-cancelar-crear" class="btn btn-secondary" style="flex:1;">Cancelar</button>
+                    <button type="submit" id="btn-submit-crear" class="btn btn-primary" style="flex:1;">Guardar Producto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: EDITAR PRODUCTO (CA04, CA05, CA06) -->
+    <div id="modal-editar" class="modal-overlay">
+        <div class="modal-card">
+            <div class="d-flex justify-between align-center mb-1" style="border-bottom:1px solid var(--border-color); padding-bottom:0.75rem;">
+                <h3 style="margin:0; font-size:1.15rem; color:#1E293B;">✏️ Modificar Producto</h3>
+                <button type="button" id="btn-cerrar-modal-editar" class="btn" style="padding:0.2rem 0.6rem; background:#eee;">✕</button>
+            </div>
+
+            <form id="form-editar-producto">
+                <input type="hidden" id="editar-id">
+
+                <div class="form-group mb-1">
+                    <label for="editar-nombre"><strong>Nombre del Producto *</strong></label>
+                    <input type="text" id="editar-nombre" maxlength="60" required placeholder="Nombre del producto" autocomplete="off">
+                    <div id="editar-nombre-feedback" style="font-size:0.78rem; margin-top:0.25rem;"></div>
+                </div>
+
+                <div class="form-group mb-1">
+                    <label for="editar-precio"><strong>Precio de Venta (S/) *</strong></label>
+                    <input type="number" id="editar-precio" min="0.10" step="0.10" required placeholder="0.00" autocomplete="off">
+                    <small style="color:var(--text-muted); font-size:0.75rem;">Solo valores positivos mayores a cero.</small>
+                </div>
+
+                <div class="form-group mb-1">
+                    <label><strong>Tipo de Producto:</strong></label>
+                    <div style="background:#F1F5F9; border:1px solid #CBD5E1; padding:0.65rem 0.85rem; border-radius:var(--radius-md); display:flex; justify-content:space-between; align-items:center;">
+                        <span id="editar-tipo-badge" style="font-weight:700;">---</span>
+                        <span style="font-size:0.75rem; color:#64748B; font-weight:600;">🔒 No editable (Regla de negocio)</span>
+                    </div>
+                    <small style="color:var(--text-muted); font-size:0.75rem; display:block; margin-top:0.3rem;">
+                        El tipo de preparación no se puede modificar para preservar el flujo de cocina y pedidos en curso.
+                    </small>
+                </div>
+
+                <div style="background:#EFF6FF; border:1px solid #BFDBFE; border-radius:var(--radius-md); padding:0.65rem 0.85rem; margin-bottom:1rem; font-size:0.8rem; color:#1E40AF;">
+                    ℹ️ Los pedidos ya registrados conservan el nombre y precio con los que fueron cobrados.
+                </div>
+
+                <div class="d-flex justify-between gap-1 mt-1" style="border-top:1px solid var(--border-color); padding-top:0.75rem;">
+                    <button type="button" id="btn-cancelar-editar" class="btn btn-secondary" style="flex:1;">Cancelar</button>
+                    <button type="submit" id="btn-submit-editar" class="btn btn-primary" style="flex:1;">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: CONFIRMAR ELIMINACIÓN (CA07, CA08) -->
+    <div id="modal-eliminar" class="modal-overlay">
+        <div class="modal-card" style="width:440px;">
+            <div class="d-flex justify-between align-center mb-1" style="border-bottom:1px solid var(--border-color); padding-bottom:0.75rem;">
+                <h3 style="margin:0; font-size:1.15rem; color:#DC2626;">🗑️ Dar de Baja Producto</h3>
+                <button type="button" id="btn-cerrar-modal-eliminar" class="btn" style="padding:0.2rem 0.6rem; background:#eee;">✕</button>
+            </div>
+
+            <div style="padding:0.5rem 0 1rem 0; font-size:0.92rem; line-height:1.5;">
+                <p style="margin:0 0 0.75rem 0;">
+                    ¿Está seguro de que desea eliminar del catálogo el producto: <br>
+                    <strong id="eliminar-nombre-display" style="font-size:1.05rem; color:#0F172A;">---</strong>?
+                </p>
+                <div style="background:#FEF2F2; border:1px solid #FCA5A5; border-radius:var(--radius-md); padding:0.75rem; font-size:0.82rem; color:#991B1B;">
+                    ⚠️ El producto dejará de estar disponible para la venta en caja y preparación en cocina. Su nombre quedará libre para reutilizarse y los pedidos históricos no se verán afectados.
+                </div>
+            </div>
+
+            <div class="d-flex justify-between gap-1" style="border-top:1px solid var(--border-color); padding-top:0.75rem;">
+                <button type="button" id="btn-cancelar-eliminar" class="btn btn-secondary" style="flex:1;">Cancelar</button>
+                <button type="button" id="btn-confirmar-eliminar" class="btn" style="flex:1; background:#DC2626; color:#fff; font-weight:700;">Sí, Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="productos.js"></script>
+</body>
+</html>

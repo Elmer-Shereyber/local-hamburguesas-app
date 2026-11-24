@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedidos en Curso - Cocina</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        .order-card {
+            border-left: 5px solid var(--accent-color);
+        }
+        .order-card.reposicion {
+            border-left-color: var(--primary-color);
+            background-color: #fff5f5;
+        }
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        .product-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Burger Local - Cocina</h1>
+        <div class="user-info">
+            <span id="current-user"></span>
+            <button id="btn-logout" class="btn-logout">Cerrar Sesión</button>
+        </div>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="pedidos.html" class="active">Pedidos en Curso</a></li>
+            <li><a href="disponibilidad.html">Disponibilidad</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h2 class="mb-2">Cola de Pedidos</h2>
+        <div id="pedidos-container" class="grid-2">
+            <p id="loading-msg" style="grid-column: 1 / -1; text-align: center;">Cargando pedidos...</p>
+        </div>
+    </div>
+    
+    <script type="module" src="pedidos.js"></script>
+</body>
+</html>

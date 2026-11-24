@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ganancias e Incidencias - Burger Local</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        .filter-toolbar {
+            background: #F8FAFC;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 1rem;
+        }
+
+        .tabs-header {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .kpi-card {
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .kpi-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.35rem;
+        }
+
+        .kpi-val {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.1;
+        }
+
+        .kpi-card.neto {
+            background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+            border-color: #93C5FD;
+        }
+
+        .kpi-card.neto .kpi-val {
+            color: #1E40AF;
+        }
+
+        .payment-breakdown-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .payment-card {
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .payment-card .p-icon {
+            font-size: 1.4rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .payment-card .p-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .payment-card .p-amount {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-top: 0.2rem;
+        }
+
+        .motivos-summary-box {
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .motivo-item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 0;
+            border-bottom: 1px dashed var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        .motivo-item-row:last-child {
+            border-bottom: none;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+
+        .modal-card {
+            background: #fff;
+            border-radius: var(--radius-lg);
+            width: 580px;
+            max-width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .pedido-incidencia-card {
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-fast);
+        }
+        .pedido-incidencia-card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: #CBD5E1;
+        }
+        .nested-incidencia-box {
+            border-radius: var(--radius-md);
+            padding: 0.85rem 1rem;
+            margin-top: 0.75rem;
+        }
+        .nested-reposicion {
+            background: #FAF5FF;
+            border: 1px solid #D8B4FE;
+        }
+        .nested-devolucion {
+            background: #FFFBEB;
+            border: 1px solid #FCD34D;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Burger Local - Administrador</h1>
+        <div class="user-info">
+            <span id="current-user"></span>
+            <button id="btn-logout" class="btn-logout">Cerrar Sesión</button>
+        </div>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="index.html">Panel General</a></li>
+            <li><a href="usuarios.html">Gestionar Usuarios</a></li>
+            <li><a href="productos.html">Gestionar Productos</a></li>
+            <li><a href="devoluciones.html">Procesar Devoluciones</a></li>
+            <li><a href="reportes.html" class="active">Ganancias e Incidencias</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <div class="mb-1">
+                <h2 style="margin:0; border:none; padding:0;">Supervisión de Ganancias e Incidencias</h2>
+                <p style="margin:0; color:var(--text-muted); font-size:0.85rem;">
+                    Consulta las métricas de ventas, cobros por modalidad y el historial detallado de reposiciones y devoluciones.
+                </p>
+            </div>
+
+            <!-- FILTRO DE RANGO DE FECHAS (CA01, CA02) -->
+            <form id="form-filtro-fechas" class="filter-toolbar">
+                <div style="flex:1; min-width:160px;">
+                    <label for="fecha-inicio" style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-muted); margin-bottom:0.25rem;">FECHA DESDE:</label>
+                    <input type="date" id="fecha-inicio" required style="padding:0.5rem 0.75rem; border:1px solid var(--border-color); border-radius:var(--radius-md); width:100%; font-size:0.9rem;">
+                </div>
+
+                <div style="flex:1; min-width:160px;">
+                    <label for="fecha-fin" style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-muted); margin-bottom:0.25rem;">FECHA HASTA:</label>
+                    <input type="date" id="fecha-fin" required style="padding:0.5rem 0.75rem; border:1px solid var(--border-color); border-radius:var(--radius-md); width:100%; font-size:0.9rem;">
+                </div>
+
+                <div class="d-flex gap-1 align-center flex-wrap" style="margin-top:auto;">
+                    <button type="button" class="btn btn-sm" id="btn-rango-hoy" style="background:#E2E8F0; color:#334155; padding:0.55rem 0.85rem; font-size:0.82rem; font-weight:600;">Hoy</button>
+                    <button type="button" class="btn btn-sm" id="btn-rango-7dias" style="background:#E2E8F0; color:#334155; padding:0.55rem 0.85rem; font-size:0.82rem; font-weight:600;">Últimos 7 días</button>
+                    <button type="button" class="btn btn-sm" id="btn-rango-mes" style="background:#E2E8F0; color:#334155; padding:0.55rem 0.85rem; font-size:0.82rem; font-weight:600;">Este Mes</button>
+                    <button type="submit" class="btn btn-primary btn-sm" id="btn-aplicar-filtro" style="padding:0.55rem 1.25rem; font-size:0.85rem; font-weight:700;">
+                        🔍 Consultar
+                    </button>
+                </div>
+            </form>
+
+            <!-- PESTAÑAS SEPARADAS (CA03) -->
+            <div class="tabs-header">
+                <button type="button" class="tab-btn active" id="tab-btn-ganancias">
+                    💰 Ganancias y Ventas
+                </button>
+                <button type="button" class="tab-btn" id="tab-btn-incidencias">
+                    ⚠️ Incidencias (Reposiciones y Devoluciones)
+                </button>
+            </div>
+
+            <p id="loading-msg" class="text-center" style="display:none; padding:2rem; color:var(--text-muted);">
+                Calculando información del rango seleccionado...
+            </p>
+
+            <!-- ======================================================== -->
+            <!-- PESTAÑA 1: GANANCIAS Y VENTAS (CA04, CA05, CA06, CA07) -->
+            <!-- ======================================================== -->
+            <div id="panel-ganancias">
+                <!-- 1. Tarjetas KPI Principales -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <span class="kpi-label">Total Ventas Brutas</span>
+                        <span class="kpi-val" id="kpi-ventas-totales">S/ 0.00</span>
+                        <small style="color:var(--text-muted); font-size:0.75rem; margin-top:0.35rem;">Incluye pedidos y reposiciones cobradas</small>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-label">Devoluciones Procesadas</span>
+                        <span class="kpi-val" id="kpi-devoluciones" style="color:#DC2626;">S/ 0.00</span>
+                        <small style="color:var(--text-muted); font-size:0.75rem; margin-top:0.35rem;" id="kpi-devoluciones-conteo">0 reembolsos realizados</small>
+                    </div>
+                    <div class="kpi-card neto">
+                        <span class="kpi-label" style="color:#1E40AF;">Monto Neto</span>
+                        <span class="kpi-val" id="kpi-monto-neto">S/ 0.00</span>
+                        <small style="color:#1E40AF; font-size:0.75rem; margin-top:0.35rem; font-weight:600;">Ventas brutas menos devoluciones</small>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-label">Pedidos Registrados</span>
+                        <span class="kpi-val" id="kpi-total-pedidos">0</span>
+                        <small style="color:var(--text-muted); font-size:0.75rem; margin-top:0.35rem;">En el rango de fechas</small>
+                    </div>
+                </div>
+
+                <!-- 2. Desglose por Modalidad de Pago (CA05 y Devoluciones Reales) -->
+                <div class="mb-2">
+                    <h3 style="font-size:1.05rem; margin:0 0 0.75rem 0; color:var(--text-main);">
+                        💳 Desglose Neto por Modalidad de Pago
+                    </h3>
+                    <div class="payment-breakdown-grid">
+                        <div class="payment-card" style="border-left:4px solid #16A34A;">
+                            <div class="p-icon">💵</div>
+                            <div class="p-title">Efectivo (Neto)</div>
+                            <div class="p-amount" id="pay-efectivo">S/ 0.00</div>
+                            <div class="p-detail" id="pay-efectivo-detail" style="font-size:0.75rem; color:var(--text-muted); margin-top:0.3rem;">Bruto: S/ 0.00</div>
+                        </div>
+                        <div class="payment-card" style="border-left:4px solid #702382;">
+                            <div class="p-icon">📱</div>
+                            <div class="p-title">Yape (Neto)</div>
+                            <div class="p-amount" id="pay-yape">S/ 0.00</div>
+                            <div class="p-detail" id="pay-yape-detail" style="font-size:0.75rem; color:var(--text-muted); margin-top:0.3rem;">Bruto: S/ 0.00</div>
+                        </div>
+                        <div class="payment-card" style="border-left:4px solid #00BFA5;">
+                            <div class="p-icon">📱</div>
+                            <div class="p-title">Plin (Neto)</div>
+                            <div class="p-amount" id="pay-plin">S/ 0.00</div>
+                            <div class="p-detail" id="pay-plin-detail" style="font-size:0.75rem; color:var(--text-muted); margin-top:0.3rem;">Bruto: S/ 0.00</div>
+                        </div>
+                        <div class="payment-card" style="border-left:4px solid #2563EB;">
+                            <div class="p-icon">🏦</div>
+                            <div class="p-title">Transferencia (Neto)</div>
+                            <div class="p-amount" id="pay-transferencia">S/ 0.00</div>
+                            <div class="p-detail" id="pay-transferencia-detail" style="font-size:0.75rem; color:var(--text-muted); margin-top:0.3rem;">Bruto: S/ 0.00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Detalle de Pedidos e Incidencias Asociadas -->
+                <div class="mb-1">
+                    <div class="mb-1">
+                        <h3 style="font-size:1.1rem; margin:0 0 0.25rem 0; color:var(--text-main);">
+                            📦 Detalle de Pedidos e Incidencias Asociadas
+                        </h3>
+                        <p style="margin:0; font-size:0.85rem; color:var(--text-muted);">
+                            Pedidos registrados junto con su comprobante de pago, reposición o devolución correspondiente
+                        </p>
+                    </div>
+
+                    <!-- Vista Principal: Pedidos con Incidencias Anidadas -->
+                    <div id="vista-pedidos-container">
+                        <div style="margin-bottom:1rem; max-width:380px;">
+                            <input type="text" id="filtro-pedidos-reporte" placeholder="🔍 Filtrar por código, cliente o comprobante..." style="width:100%; padding:0.55rem 0.85rem; border:1px solid var(--border-color); border-radius:var(--radius-md); font-size:0.88rem;">
+                        </div>
+
+                        <div id="lista-pedidos-incidencias" style="display:flex; flex-direction:column; gap:1rem;">
+                            <!-- Generado dinámicamente -->
+                        </div>
+
+                        <p id="sin-pedidos-reporte-msg" class="text-center" style="display:none; color:var(--text-muted); padding:2rem;">
+                            No se registraron pedidos en este rango de fechas.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ======================================================== -->
+            <!-- PESTAÑA 2: INCIDENCIAS (CA08, CA09, CA10, CA11) -->
+            <!-- ======================================================== -->
+            <div id="panel-incidencias" style="display:none;">
+                <!-- 1. Resumen Estadístico de Motivos de Reclamo (CA11) -->
+                <div class="motivos-summary-box">
+                    <div class="d-flex justify-between align-center mb-1">
+                        <h3 style="margin:0; font-size:1.05rem; color:var(--text-main);">
+                            📊 Resumen de Motivos de Reclamo Recurrentes
+                        </h3>
+                        <span id="motivos-total-badge" class="badge" style="background:#F1F5F9; color:#475569; font-size:0.8rem;">
+                            0 incidencias en total
+                        </span>
+                    </div>
+                    <div id="motivos-lista-container">
+                        <!-- Generado dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- 2. Listado de Reposiciones Registradas (CA08) -->
+                <div class="mb-2">
+                    <div class="d-flex justify-between align-center mb-1">
+                        <h3 style="margin:0; font-size:1.05rem; color:var(--text-main);">
+                            🔄 Reposiciones de Productos Registradas
+                        </h3>
+                        <span id="conteo-reposiciones" class="badge" style="background:#8B5CF6; font-size:0.8rem;">0 reposiciones</span>
+                    </div>
+                    
+                    <div class="table-responsive" style="border:1px solid var(--border-color); border-radius:var(--radius-md); overflow:hidden;">
+                        <table class="pedidos-modern-table" id="tabla-reposiciones">
+                            <thead>
+                                <tr>
+                                    <th>Fecha / Hora</th>
+                                    <th>Reposición</th>
+                                    <th>Productos Repuestos</th>
+                                    <th>Motivo & Detalle</th>
+                                    <th style="text-align:right;">Diferencia Cobrada</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reposiciones-tbody">
+                                <!-- Dinámico -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <p id="sin-reposiciones-msg" class="text-center" style="display:none; color:var(--text-muted); padding:1.5rem;">
+                        No se registraron reposiciones en este rango de fechas.
+                    </p>
+                </div>
+
+                <!-- 3. Listado de Devoluciones de Dinero (CA09, CA10) -->
+                <div class="mb-1">
+                    <div class="d-flex justify-between align-center mb-1">
+                        <h3 style="margin:0; font-size:1.05rem; color:var(--text-main);">
+                            💵 Devoluciones de Dinero Solicitadas y Procesadas
+                        </h3>
+                        <span id="conteo-devoluciones" class="badge" style="background:#4F46E5; font-size:0.8rem;">0 devoluciones</span>
+                    </div>
+
+                    <div class="table-responsive" style="border:1px solid var(--border-color); border-radius:var(--radius-md); overflow:hidden;">
+                        <table class="pedidos-modern-table" id="tabla-devoluciones-reporte">
+                            <thead>
+                                <tr>
+                                    <th>Fecha Solicitud</th>
+                                    <th>Pedido</th>
+                                    <th>Cliente / Contacto</th>
+                                    <th>Modalidad</th>
+                                    <th style="text-align:right;">Monto</th>
+                                    <th style="text-align:center;">Estado</th>
+                                    <th style="text-align:right;">Comprobantes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="devoluciones-reporte-tbody">
+                                <!-- Dinámico -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <p id="sin-devoluciones-msg" class="text-center" style="display:none; color:var(--text-muted); padding:1.5rem;">
+                        No se registraron solicitudes de devolución en este rango de fechas.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL VISOR DE VOUCHER DE PAGO (CA10) -->
+    <div id="modal-visor" class="modal-overlay">
+        <div class="modal-card">
+            <div class="d-flex justify-between align-center mb-1" style="border-bottom:1px solid var(--border-color); padding-bottom:0.75rem;">
+                <h3 style="margin:0; font-size:1.15rem; color:#1E3A8A;">🖼️ Voucher de Reembolso Bancario</h3>
+                <button type="button" id="btn-cerrar-modal-visor" class="btn" style="padding:0.2rem 0.6rem; background:#eee;">✕</button>
+            </div>
+            
+            <div id="visor-meta" style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem; line-height:1.5;"></div>
+
+            <div id="visor-content" style="text-align:center; background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1rem; min-height:220px; display:flex; align-items:center; justify-content:center;">
+                <!-- Imagen o iframe PDF -->
+            </div>
+
+            <div class="d-flex justify-between gap-1 mt-1" style="border-top:1px solid var(--border-color); padding-top:0.75rem;">
+                <button type="button" id="btn-cerrar-visor" class="btn btn-secondary" style="flex:1;">Cerrar</button>
+                <a id="btn-descargar-voucher" class="btn btn-primary" download style="flex:1; text-align:center; text-decoration:none; display:none;">
+                    📥 Descargar Archivo
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="reportes.js"></script>
+</body>
+</html>

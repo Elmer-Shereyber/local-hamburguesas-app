@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultar Pedidos - Cajera</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Burger Local - Cajera</h1>
+        <div class="user-info">
+            <span id="current-user"></span>
+            <button id="btn-logout" class="btn-logout">Cerrar Sesión</button>
+        </div>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="registrar-pedido.html">Registrar Pedido</a></li>
+            <li><a href="consultar-pedidos.html" class="active">Consultar Pedidos</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="card" style="padding: 1.5rem;">
+            <div class="pedidos-header-bar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+                <div>
+                    <h2 style="margin:0; border:none; padding:0; font-size:1.4rem;">Consultar Pedidos</h2>
+                    <p style="margin:0; color:var(--text-muted); font-size:0.85rem;">Seguimiento en tiempo real y atención de incidencias del día</p>
+                </div>
+                <div style="flex:1; max-width:340px; min-width:240px;">
+                    <input type="text" id="buscar-comprobante" placeholder="🔍 Buscar código o comprobante..." style="width:100%; padding:0.6rem 0.85rem; border:1px solid var(--border-color); border-radius:var(--radius-md); font-size:0.9rem;">
+                </div>
+            </div>
+
+            <p id="loading-msg" class="text-center" style="padding:2rem; color:var(--text-muted);">Cargando pedidos del día...</p>
+            
+            <!-- Vista Tabla (Desktop / Tablet) -->
+            <div class="table-responsive" id="table-wrapper" style="display:none; border:1px solid var(--border-color); border-radius:var(--radius-md); overflow:hidden;">
+                <table id="pedidos-table" class="pedidos-modern-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Comprobante</th>
+                            <th>Hora</th>
+                            <th>Total</th>
+                            <th>Estado General</th>
+                            <th style="text-align:right;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pedidos-tbody">
+                        <!-- Dinámico -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Vista Móvil (Cards responsivas para pantallas pequeñas) -->
+            <div id="pedidos-mobile-list" style="display:none; flex-direction:column; gap:0.85rem;">
+                <!-- Dinámico en móvil -->
+            </div>
+
+            <p id="no-results-msg" class="text-center" style="display:none; color:var(--text-muted); padding:2rem;">No se encontraron pedidos con ese criterio de búsqueda.</p>
+        </div>
+    </div>
+
+    <!-- Modal simple para Detalle -->
+    <div id="modal-detalle" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
+        <div class="card" style="width: 550px; max-width: 90%; max-height: 90vh; overflow-y:auto; margin:0;">
+            <div class="d-flex justify-between align-center mb-1">
+                <h2 style="margin:0; border:none; padding:0;">Detalle del Pedido</h2>
+                <button id="btn-cerrar-modal" class="btn" style="padding:0.2rem 0.5rem; background:#eee;">X</button>
+            </div>
+            <div id="modal-content"></div>
+        </div>
+    </div>
+
+    <!-- Modal para Registrar Reposición (HU-04) -->
+    <div id="modal-reposicion" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1001; justify-content:center; align-items:center;">
+        <div class="card" style="width: 620px; max-width: 92%; max-height: 92vh; overflow-y:auto; margin:0;">
+            <div class="d-flex justify-between align-center mb-1">
+                <h2 id="repo-title" style="margin:0; border:none; padding:0; font-size:1.25rem;">Registrar Reposición</h2>
+                <button id="btn-cerrar-repo" class="btn" style="padding:0.2rem 0.5rem; background:#eee;">X</button>
+            </div>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">
+                Seleccione los productos reclamados. Si el producto original no está disponible, el sistema ofrecerá opciones de igual o mayor precio.
+            </p>
+
+            <form id="form-reposicion">
+                <div class="form-group">
+                    <label><strong>1. Productos a reponer:</strong></label>
+                    <div id="repo-productos-container" style="background:var(--bg-main); padding:0.75rem; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+                        <!-- Lista dinámica con checkboxes, cantidades y selector de reemplazo -->
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="repo-motivo"><strong>2. Motivo obligatorio:</strong></label>
+                    <select id="repo-motivo" required>
+                        <option value="">Seleccione motivo...</option>
+                        <option value="Producto en mal estado">Producto en mal estado</option>
+                        <option value="Error en la preparación">Error en la preparación</option>
+                        <option value="Producto incorrecto">Producto incorrecto</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="repo-observacion">Observación <span id="repo-obs-req" style="font-size:0.8rem; color:var(--text-muted); font-weight:normal;">(Opcional, máx 250 car.)</span></label>
+                    <textarea id="repo-observacion" maxlength="250" rows="2" placeholder="Detalle adicional sobre el reclamo..."></textarea>
+                    <div style="text-align:right; font-size:0.78rem; color:var(--text-muted); margin-top:0.2rem;">
+                        <span id="repo-obs-counter">0</span> / 250 caracteres
+                    </div>
+                </div>
+
+                <!-- Aviso de reposición sin costo: Mismo producto estricto -->
+                <div style="background:#F0FDF4; border:1px solid #BBF7D0; padding:0.75rem 1rem; border-radius:var(--radius-md); margin-bottom:1rem; font-size:0.85rem; color:#166534; display:flex; align-items:center; gap:0.5rem;">
+                    <span style="font-size:1.15rem;">ℹ️</span>
+                    <div>
+                        <strong>Reposición sin costo:</strong> Solo se puede reponer el <strong>mismo producto</strong> comprado (sujeto a disponibilidad en cocina). Toda la reposición debe solicitarse en una sola oportunidad.
+                    </div>
+                </div>
+
+                <div class="d-flex justify-between mt-1">
+                    <button type="button" id="btn-cancelar-repo" class="btn" style="background:#eee;">Cancelar</button>
+                    <button type="submit" id="btn-confirmar-repo" class="btn btn-primary" disabled>Enviar Reposición a Cocina</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Solicitar Devolución (HU-05) -->
+    <div id="modal-devolucion" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1001; justify-content:center; align-items:center;">
+        <div class="card" style="width: 620px; max-width: 92%; max-height: 92vh; overflow-y:auto; margin:0;">
+            <div class="d-flex justify-between align-center mb-1">
+                <h2 id="dev-title" style="margin:0; border:none; padding:0; font-size:1.25rem;">Solicitar Devolución</h2>
+                <button id="btn-cerrar-dev" class="btn" style="padding:0.2rem 0.5rem; background:#eee;">X</button>
+            </div>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">
+                Registra los datos para que el Administrador realice el reembolso bancario o billetera digital al cliente.
+            </p>
+
+            <form id="form-devolucion">
+                <div class="form-group">
+                    <label><strong>1. Productos a devolver:</strong></label>
+                    <div id="dev-productos-container" style="background:var(--bg-main); padding:0.75rem; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+                        <!-- Lista dinámica con checkboxes y cantidades -->
+                    </div>
+                </div>
+
+                <!-- Monto a devolver calculado automáticamente -->
+                <div style="background:#EFF6FF; border:1px solid #BFDBFE; padding:0.75rem; border-radius:var(--radius-md); margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight:600; color:#1E40AF;">Monto a devolver (automático):</span>
+                    <span id="dev-monto-calculado" style="font-size:1.2rem; font-weight:bold; color:#1E3A8A;">S/ 0.00</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="dev-motivo"><strong>2. Motivo obligatorio:</strong></label>
+                    <select id="dev-motivo" required>
+                        <option value="">Seleccione motivo...</option>
+                        <option value="Producto en mal estado">Producto en mal estado</option>
+                        <option value="Error en la preparación">Error en la preparación</option>
+                        <option value="Producto incorrecto">Producto incorrecto</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="dev-observacion">Observación <span id="dev-obs-req" style="font-size:0.8rem; color:var(--text-muted); font-weight:normal;">(Opcional, máx 250 car.)</span></label>
+                    <textarea id="dev-observacion" maxlength="250" rows="2" placeholder="Detalle adicional sobre el reclamo..."></textarea>
+                    <div style="text-align:right; font-size:0.78rem; color:var(--text-muted); margin-top:0.2rem;">
+                        <span id="dev-obs-counter">0</span> / 250 caracteres
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="dev-modalidad"><strong>3. Modalidad de devolución del dinero:</strong></label>
+                    <select id="dev-modalidad" required>
+                        <option value="">Seleccione modalidad...</option>
+                        <option value="Yape">Yape</option>
+                        <option value="Plin">Plin</option>
+                        <option value="Transferencia">Transferencia Bancaria</option>
+                    </select>
+                    <small style="color:var(--text-muted); font-size:0.8rem;">* Por regla de negocio, la devolución en efectivo no está disponible.</small>
+                </div>
+
+                <!-- Campos dinámicos según modalidad -->
+                <div id="dev-campos-billetera" style="display:none; background:var(--bg-main); padding:0.75rem; border-radius:var(--radius-md); margin-bottom:1rem;">
+                    <div class="form-group mb-1">
+                        <label for="dev-telefono-billetera">Número de Celular (Yape/Plin)</label>
+                        <input type="text" id="dev-telefono-billetera" maxlength="9" placeholder="9XXXXXXXX (9 dígitos, inicia con 9)" autocomplete="off">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label for="dev-titular-billetera">Nombre del Titular de la cuenta</label>
+                        <input type="text" id="dev-titular-billetera" maxlength="50" placeholder="Nombre completo del titular (máx 50 car.)" autocomplete="off">
+                    </div>
+                </div>
+
+                <div id="dev-campos-transferencia" style="display:none; background:var(--bg-main); padding:0.75rem; border-radius:var(--radius-md); margin-bottom:1rem;">
+                    <div class="form-group mb-1">
+                        <label>Tipo de Cuenta:</label>
+                        <div class="d-flex gap-1" style="margin-bottom:0.5rem;">
+                            <label style="font-weight:normal;"><input type="radio" name="dev-tipo-cuenta" value="cuenta" checked> N° de Cuenta (10-20 dígitos)</label>
+                            <label style="font-weight:normal;"><input type="radio" name="dev-tipo-cuenta" value="cci"> CCI (20 dígitos)</label>
+                        </div>
+                        <input type="text" id="dev-numero-cuenta" maxlength="20" placeholder="Ingrese número de cuenta o CCI" autocomplete="off">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label for="dev-titular-transferencia">Nombre del Titular de la cuenta</label>
+                        <input type="text" id="dev-titular-transferencia" maxlength="50" placeholder="Nombre completo del titular (máx 50 car.)" autocomplete="off">
+                    </div>
+                </div>
+
+                <div style="background:#F8FAFC; border:1px solid var(--border-color); padding:0.75rem; border-radius:var(--radius-md); margin-bottom:1.25rem;">
+                    <label style="font-weight:bold; font-size:0.9rem; margin-bottom:0.5rem; display:block;">4. Datos de contacto del cliente que reclama:</label>
+                    <div class="form-group mb-1">
+                        <div class="d-flex justify-between align-center" style="margin-bottom:0.25rem;">
+                            <label for="dev-cliente-nombre" style="font-size:0.85rem; margin-bottom:0;">Nombre del Cliente que reclama:</label>
+                            <span id="dev-cliente-nombre-hint" style="font-size:0.75rem; color:#2563EB; font-weight:600; display:none;">Autocompletado con DNI/Factura</span>
+                        </div>
+                        <input type="text" id="dev-cliente-nombre" maxlength="50" required placeholder="Nombre completo del cliente (máx 50 car.)" autocomplete="off">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label for="dev-cliente-telefono" style="font-size:0.85rem;">Teléfono de contacto:</label>
+                        <input type="text" id="dev-cliente-telefono" maxlength="9" required placeholder="9XXXXXXXX (9 dígitos, inicia con 9)" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="d-flex justify-between mt-1">
+                    <button type="button" id="btn-cancelar-dev" class="btn" style="background:#eee;">Cancelar</button>
+                    <button type="submit" id="btn-confirmar-dev" class="btn btn-primary" disabled>Registrar Solicitud</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script type="module" src="consultar-pedidos.js"></script>
+</body>
+</html>

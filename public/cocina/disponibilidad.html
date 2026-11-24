@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disponibilidad - Cocina</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Burger Local - Cocina</h1>
+        <div class="user-info">
+            <span id="current-user"></span>
+            <button id="btn-logout" class="btn-logout">Cerrar Sesión</button>
+        </div>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="pedidos.html">Pedidos en Curso</a></li>
+            <li><a href="disponibilidad.html" class="active">Disponibilidad</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <h2>Gestión de Disponibilidad del Menú</h2>
+            <p class="mb-1 text-center" id="loading-msg">Cargando productos...</p>
+            <table id="productos-table" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Precio</th>
+                        <th>Estado Actual</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="productos-tbody">
+                    <!-- Filas generadas dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script type="module" src="disponibilidad.js"></script>
+</body>
+</html>
