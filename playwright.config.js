@@ -14,7 +14,7 @@ export default defineConfig({
     trace: 'retain-on-failure'
   },
   webServer: {
-    command: 'python3 -m http.server 4173 --directory public',
+    command: 'node scripts/static-server.js',
     url: 'http://127.0.0.1:4173/login/index.html',
     reuseExistingServer: true,
     timeout: 30000

@@ -510,6 +510,8 @@ npm run test:e2e
 
 También se fijó `@grpc/grpc-js` 1.14.7 mediante `overrides`; `npm audit` volvió a **0 vulnerabilidades**.
 
+En la primera ejecución en Windows, Playwright no pudo iniciar el servidor porque la configuración dependía de `python3`, que no estaba instalado. Se sustituyó por `scripts/static-server.js`, un servidor estático basado únicamente en Node.js. De esta manera las E2E funcionan en Windows sin instalar Python ni habilitar alias de Microsoft Store.
+
 ## Formato para documentar cada prueba
 
 Cada prueba añadida se registrará con esta información:
