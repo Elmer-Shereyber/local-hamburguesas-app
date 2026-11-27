@@ -105,6 +105,33 @@ Conclusión:
 - el árbol de trabajo está limpio;
 - ya es seguro instalar y registrar las dependencias de pruebas.
 
+### Sesión 03 — Inicialización de npm e instalación de Vitest
+
+**Fecha:** 27 de noviembre de 2026
+
+El estudiante sincronizó primero la actualización de la bitácora mediante `git pull --ff-only`. La actualización se aplicó como avance rápido, sin conflictos.
+
+Después ejecutó:
+
+```powershell
+npm init -y
+npm install --save-dev vitest
+```
+
+Resultados:
+
+- se crearon `package.json` y `package-lock.json`;
+- se instaló Vitest `5.1.2` como dependencia de desarrollo;
+- se añadieron 36 paquetes;
+- npm auditó 37 paquetes;
+- se encontraron **0 vulnerabilidades**.
+
+Observaciones:
+
+- `npm init -y` generó inicialmente el script de prueba de ejemplo que termina con error porque todavía no existe un ejecutor configurado;
+- el archivo quedó con `"type": "commonjs"`, pero el código del proyecto usa módulos ES mediante `import` y `export`, por lo que se cambiará a `"type": "module"`;
+- PowerShell mostró caracteres como `atenciÃ³n` al utilizar `Get-Content` sin especificar UTF-8. Se comprobará el archivo con `Get-Content -Encoding utf8 package.json`.
+
 ## Formato para documentar cada prueba
 
 Cada prueba añadida se registrará con esta información:
@@ -127,12 +154,14 @@ Cada prueba añadida se registrará con esta información:
 |---|---:|---:|---:|---:|
 | 01 | 0 | 0 | 0 | Preparar repositorio |
 | 02 | 0 | 0 | 0 | Instalar Vitest |
+| 03 | 0 | 0 | 0 | Configurar módulos y scripts |
 
 ## Próximo paso
 
-Inicializar npm e instalar Vitest dentro del clon correcto.
+Configurar el proyecto como módulo ES y reemplazar el script de prueba de ejemplo por Vitest.
 
 ## Historial de actualización
 
 - **2026-11-27:** creación inicial de la guía y registro de versiones de Node.js y npm.
 - **2026-11-27:** registro del clon correcto, estado limpio y advertencia sobre el repositorio Git accidental en una carpeta superior.
+- **2026-11-27:** registro de la inicialización de npm, instalación de Vitest 5.1.2 y auditoría con cero vulnerabilidades.
