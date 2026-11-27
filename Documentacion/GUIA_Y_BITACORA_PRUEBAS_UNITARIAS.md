@@ -249,6 +249,30 @@ Duration    207ms
 | PU-UTIL-001 | `15` | `S/ 15.00` | `S/ 15.00` | Aprobada |
 | PU-UTIL-002 | `18.5` | `S/ 18.50` | `S/ 18.50` | Aprobada |
 
+### Sesión 06 — Primer punto de control en Git
+
+**Fecha:** 27 de noviembre de 2026
+
+Se seleccionaron explícitamente los archivos de configuración y pruebas:
+
+```powershell
+git add package.json package-lock.json tests/utils.test.js
+git commit -m "test: configurar Vitest y agregar pruebas de moneda"
+git push origin pruebas-unitarias-guiadas
+```
+
+Resultado:
+
+- commit corto: `70ce9d6`;
+- commit completo: `70ce9d6170bd1fc04b9bcaac67efbf90e6b42dcc`;
+- 3 archivos nuevos;
+- 1230 líneas añadidas, principalmente por el archivo de bloqueo de dependencias;
+- publicación remota completada en `pruebas-unitarias-guiadas`.
+
+Se verificó posteriormente mediante GitHub que el commit remoto conserva el mensaje correcto y que `tests/utils.test.js` contiene los dos casos aprobados.
+
+Durante `git add` Windows mostró la advertencia `LF will be replaced by CRLF`. No representa un error de las pruebas ni una corrupción: informa sobre la normalización de finales de línea entre Git y Windows.
+
 ## Formato para documentar cada prueba
 
 Cada prueba añadida se registrará con esta información:
@@ -274,10 +298,11 @@ Cada prueba añadida se registrará con esta información:
 | 03 | 0 | 0 | 0 | Configurar módulos y scripts |
 | 04 | 2 intentos | 1 | 1 intento de configuración | Diseñar PU-UTIL-002 |
 | 05 | 2 pruebas finales | 2 | 0 | Crear primer commit |
+| 06 | 2 verificadas en GitHub | 2 | 0 | Diseñar casos adicionales |
 
 ## Próximo paso
 
-Crear un punto de control en Git con la configuración y las dos primeras pruebas aprobadas.
+Ampliar `formatCurrency` con casos límite y aprender pruebas parametrizadas.
 
 ## Historial de actualización
 
@@ -286,3 +311,4 @@ Crear un punto de control en Git con la configuración y las dos primeras prueba
 - **2026-11-27:** registro de la inicialización de npm, instalación de Vitest 5.1.2 y auditoría con cero vulnerabilidades.
 - **2026-11-27:** registro de PU-UTIL-001, incluyendo el intento fallido por archivo no guardado y su ejecución aprobada.
 - **2026-11-27:** registro de PU-UTIL-002, errores de sintaxis y estructura encontrados, y ejecución final con dos pruebas aprobadas.
+- **2026-11-27:** verificación del primer commit de pruebas publicado en GitHub.
