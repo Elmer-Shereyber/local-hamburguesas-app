@@ -23,6 +23,30 @@ Resultado de referencia del 27 de noviembre de 2026:
 
 Los porcentajes corresponden a `public/shared/*-rules.js` y `public/shared/utils.js`. Firebase, el DOM y la navegación se excluyen deliberadamente porque requieren otros niveles de prueba.
 
+## Ampliación a DOM, integración y E2E
+
+Después de la fase unitaria se añadieron los niveles que faltaban:
+
+| Nivel | Archivo o herramienta | Casos | Estado verificado |
+|---|---|---:|---|
+| Unitarias de reglas y utilidades | Vitest | 184 | 184 aprobadas |
+| Contratos DOM de las 15 HU | `tests/dom/html-contracts.test.js` | 16 | 16 aprobadas |
+| API DNI/RUC con proveedor simulado | `tests/persona-api.test.js` | 6 | 6 aprobadas |
+| Firestore Emulator: permisos, CRUD y tiempo real | `firestore.integration.test.js` | 9 | 9 aprobadas |
+| Authentication Emulator: acceso, error, logout y recuperación | `auth.integration.test.js` | 5 | 5 aprobadas |
+| Navegador real: rutas y adaptación 375/768/1440 px | `e2e/static-pages.spec.js` | 14 | Preparadas; requieren instalar Chromium de Playwright |
+
+Total ejecutado y aprobado en el entorno de desarrollo: **220 pruebas** (206 de Vitest y 14 de Firebase Emulator). Hay además **14 E2E preparadas**. Su descarga de Chromium fue bloqueada con HTTP 403 por la red del entorno de automatización, por lo que no se registran falsamente como aprobadas.
+
+Comandos:
+
+```powershell
+npm run test:run
+npm run test:integration
+npm run test:e2e:install
+npm run test:e2e
+```
+
 ## Trazabilidad por historia
 
 | HU | Historia | Módulo bajo prueba | Archivo de pruebas | Reglas unitarias cubiertas | Pruebas no unitarias necesarias |
@@ -74,8 +98,10 @@ Las pruebas generadas con `it.each` cuentan una vez por cada dato de la tabla; p
 2. La gestión de usuarios operativos no debe conservar contraseñas legibles en Firestore. La solución correcta requiere un entorno administrativo seguro, por ejemplo una función backend con Firebase Admin SDK; no debe resolverse desde el navegador.
 3. Las reglas de sesión única de HU-13 y la invalidación de sesiones después de HU-15 están cubiertas como dominio, pero falta confirmar su integración completa con Firebase.
 4. No se encontraron pruebas automatizadas de reglas de seguridad de Firestore. Deben añadirse con Firebase Emulator Suite antes de considerar verificado el control de acceso.
-5. Las consultas externas de DNI/RUC deben probarse con mocks y, aparte, con una prueba de integración controlada; una prueba unitaria no debe depender de la disponibilidad de un proveedor externo.
+5. Las consultas de DNI/RUC ya se prueban con un proveedor simulado y errores controlados. La comprobación contra el proveedor real debe mantenerse como prueba manual o integración controlada para evitar que una caída externa rompa la suite.
+6. `firestore.test.rules` existe exclusivamente para el emulador y no se despliega automáticamente. Antes de usar reglas equivalentes en producción se debe contrastar cada permiso con el proyecto Firebase real.
+7. Las E2E añadidas validan rutas, estructura y adaptación visual. Todavía falta un recorrido funcional completo autenticado que conecte navegador, Auth Emulator y Firestore Emulator.
 
 ## Interpretación correcta del resultado
 
-La ejecución verde demuestra que las 184 reglas aisladas producen el resultado esperado con los datos probados. No demuestra por sí sola que Firebase, la API externa, el navegador, el PDF o dos dispositivos funcionen juntos. Para afirmar que cada HU está completamente aceptada se necesita completar las pruebas de integración y extremo a extremo indicadas en la última columna de la matriz.
+La ejecución verde demuestra las reglas aisladas, los contratos DOM y 14 integraciones con Firebase Emulator. Todavía no demuestra por sí sola que el proyecto Firebase real, el proveedor externo, el PDF o varios dispositivos funcionen juntos. Para afirmar que cada HU está completamente aceptada se necesita ejecutar las E2E en Chromium y completar el recorrido funcional autenticado indicado en los pendientes.

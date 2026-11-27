@@ -1,0 +1,68 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function email() {
+      return signedIn() && request.auth.token.email is string
+        ? request.auth.token.email.lower()
+        : '';
+    }
+
+    function admin() {
+      return signedIn() && !email().matches('.*@burger\\.local$');
+    }
+
+    function cajera() {
+      return signedIn() && email().matches('.*@burger\\.local$')
+        && exists(/databases/$(database)/documents/usuarios/cajera)
+        && get(/databases/$(database)/documents/usuarios/cajera).data.email == email();
+    }
+
+    function cocina() {
+      return signedIn() && email().matches('.*@burger\\.local$')
+        && exists(/databases/$(database)/documents/usuarios/cocina)
+        && get(/databases/$(database)/documents/usuarios/cocina).data.email == email();
+    }
+
+    match /productos/{productoId} {
+      allow read: if signedIn();
+      allow create, delete: if admin();
+      allow update: if admin()
+        || (cocina() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['disponible']));
+    }
+
+    match /pedidos/{pedidoId} {
+      allow read: if signedIn();
+      allow create: if cajera();
+      allow update: if cajera()
+        || (cocina() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['productos', 'estadoGeneral', 'fechaTomado']));
+      allow delete: if false;
+    }
+
+    match /devoluciones/{devolucionId} {
+      allow read: if admin() || cajera();
+      allow create: if cajera();
+      allow update: if admin();
+      allow delete: if false;
+    }
+
+    match /usuarios/{usuarioId} {
+      allow read: if signedIn();
+      allow write: if admin();
+    }
+
+    match /configuracion/{documento} {
+      allow read: if signedIn();
+      allow update: if admin() || cajera();
+      allow create, delete: if admin();
+    }
+
+    match /{documento=**} {
+      allow read, write: if false;
+    }
+  }
+}

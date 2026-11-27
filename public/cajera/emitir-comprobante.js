@@ -1,6 +1,7 @@
 import { requireAuth } from '../shared/auth.js';
 import { formatCurrency, generateOrderCode, showAlert } from '../shared/utils.js';
 import { getConfiguracion, incrementCorrelativo, registrarPedido } from '../shared/db.js';
+import { consultarPersona } from '../shared/persona-api.js';
 
 requireAuth('cajera');
 
@@ -82,8 +83,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         validarFormulario();
     });
 
-    const API_URL = "https://script.google.com/macros/s/AKfycbz1qSEiKXX0mCb0gobd0luul4NoOE5IrpodghW02DVQMUfelDj4rOEWpZRD6kALugi8/exec";
-
     // Búsqueda de DNI
     btnBuscarDni.addEventListener('click', async () => {
         const dni = dniInput.value.trim();
@@ -97,20 +96,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         nombreInput.value = '';
 
         try {
-            const response = await fetch(`${API_URL}?tipo=dni&numero=${dni}`);
-            const data = await response.json();
-
-            if (data.error || data.message) {
-                showAlert(data.error || data.message || "DNI no encontrado.");
-            } else if (data.nombres) {
-                nombreInput.value = `${data.nombres} ${data.apellidoPaterno} ${data.apellidoMaterno}`.trim();
-                validarFormulario();
-            } else {
-                showAlert("DNI no encontrado.");
-            }
+            const persona = await consultarPersona('dni', dni);
+            nombreInput.value = persona.nombre;
+            validarFormulario();
         } catch (error) {
             console.error("Network Error:", error);
-            showAlert("Error de conexión al consultar DNI.");
+            showAlert(error.message || "Error de conexión al consultar DNI.");
         } finally {
             btnBuscarDni.disabled = false;
             btnBuscarDni.textContent = 'Buscar';
@@ -131,28 +122,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         domicilioFiscalInput.value = '';
 
         try {
-            const response = await fetch(`${API_URL}?tipo=ruc&numero=${ruc}`);
-            const data = await response.json();
-
-            if (data.error || data.message) {
-                showAlert(data.error || data.message || "RUC no encontrado.");
-            } else if (data.razonSocial) {
-                // Validar estado y condición de la empresa
-                if (data.estado !== 'ACTIVO') {
-                    showAlert(`La empresa se encuentra en estado: ${data.estado}. No se puede emitir factura.`);
-                } else if (data.condicion !== 'HABIDO') {
-                    showAlert(`La empresa tiene condición: ${data.condicion}. No se puede emitir factura.`);
-                } else {
-                    razonSocialInput.value = data.razonSocial;
-                    domicilioFiscalInput.value = data.direccion || 'Sin dirección registrada';
-                    validarFormulario();
-                }
-            } else {
-                showAlert("RUC no encontrado.");
-            }
+            const empresa = await consultarPersona('ruc', ruc);
+            razonSocialInput.value = empresa.razonSocial;
+            domicilioFiscalInput.value = empresa.direccion;
+            validarFormulario();
         } catch (error) {
             console.error("Network Error:", error);
-            showAlert("Error de conexión al consultar RUC.");
+            showAlert(error.message || "Error de conexión al consultar RUC.");
         } finally {
             btnBuscarRuc.disabled = false;
             btnBuscarRuc.textContent = 'Buscar';

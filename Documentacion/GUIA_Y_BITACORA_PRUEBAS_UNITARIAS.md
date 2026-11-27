@@ -458,6 +458,58 @@ Los umbrales automáticos son 80 % en sentencias, 70 % en ramas, 90 % en funcion
 
 La trazabilidad completa y los límites de la prueba unitaria están en `Documentacion/MATRIZ_PRUEBAS_UNITARIAS_15_HU.md`.
 
+### Sesión 11 — Contratos DOM y proveedor DNI/RUC simulado
+
+**Fecha:** 27 de noviembre de 2026
+
+Se añadieron 16 pruebas DOM que inspeccionan la estructura HTML de las 15 HU: campos, límites, modalidades, elementos protegidos, recuperación, carga de archivos y adaptación declarada. También se extrajo `persona-api.js` para probar seis escenarios de DNI/RUC sin depender de Internet: formatos, respuesta válida, empresa inactiva/no habida, ausencia de datos, error HTTP y desconexión.
+
+Resultado:
+
+```text
+Test Files  10 passed (10)
+Tests       206 passed (206)
+```
+
+### Sesión 12 — Firebase Emulator Suite
+
+**Fecha:** 27 de noviembre de 2026
+
+Se configuraron Auth y Firestore Emulator mediante `firebase.json`, `firestore.test.rules` y una configuración Vitest independiente. Las 14 pruebas de integración validan:
+
+- rechazo de acceso no autenticado;
+- lectura autenticada;
+- permisos de administrador, cajera y cocina;
+- creación de pedidos y solicitudes;
+- actualización restringida de disponibilidad y preparación;
+- procesamiento administrativo de devoluciones;
+- propagación en tiempo real;
+- inicio y cierre de sesión;
+- contraseña incorrecta;
+- solicitud de recuperación del administrador.
+
+Resultado:
+
+```text
+Test Files  2 passed (2)
+Tests       14 passed (14)
+```
+
+### Sesión 13 — Preparación de Playwright
+
+**Fecha:** 27 de noviembre de 2026
+
+Se crearon 14 pruebas E2E para comprobar que once rutas responden correctamente y que las pantallas principales no desbordan en 375, 768 y 1440 píxeles. Playwright reconoce correctamente los 14 casos. La ejecución no pudo certificarse en este entorno porque la descarga oficial de Chromium fue rechazada por la red con HTTP 403 y el lanzador Chromium preinstalado no contiene su binario interno.
+
+Esto se registra como limitación del entorno, no como prueba aprobada ni como fallo funcional de Burger Local. En Windows se resuelve ejecutando:
+
+```powershell
+npm run test:e2e:install
+npm run test:e2e
+```
+
+También se fijó `@grpc/grpc-js` 1.14.7 mediante `overrides`; `npm audit` volvió a **0 vulnerabilidades**.
+
 ## Formato para documentar cada prueba
 
 Cada prueba añadida se registrará con esta información:
@@ -488,10 +540,13 @@ Cada prueba añadida se registrará con esta información:
 | 08 | 58 | 58 | 0 | Extender a las demás HU |
 | 09 | 184 | 184 | 0 | Medir cobertura |
 | 10 | 184 | 184 | 0 | Pruebas de integración y E2E |
+| 11 | 206 | 206 | 0 | Integrar Firebase Emulator |
+| 12 | 14 | 14 | 0 | Ejecutar E2E en Chromium |
+| 13 | 14 E2E definidas | 0 certificadas | 0 fallos de aplicación | Instalar navegador en un entorno con acceso al CDN |
 
 ## Próximo paso recomendado
 
-Ejecutar pruebas de integración con Firebase Emulator Suite y después pruebas E2E del navegador. Esos niveles deben validar persistencia, tiempo real, seguridad por rol, APIs de DNI/RUC, navegación, archivos y PDFs; no deben presentarse como pruebas unitarias.
+Ejecutar las 14 E2E en un equipo con Chromium de Playwright y después ampliar Playwright con un recorrido funcional autenticado contra Auth/Firestore Emulator. Persistencia, tiempo real, permisos y API simulada ya tienen cobertura automatizada; archivos, impresión/PDF, sesión única e invalidación posterior al restablecimiento siguen requiriendo verificación funcional adicional.
 
 ## Historial de actualización
 
@@ -507,3 +562,6 @@ Ejecutar pruebas de integración con Firebase Emulator Suite y después pruebas 
 - **2026-11-27:** HU-01 integrada con la interfaz y límites 300/301 reconciliados.
 - **2026-11-27:** reglas y suites añadidas para HU-02 a HU-15; utilidades ampliadas.
 - **2026-11-27:** regresión final de 184 pruebas, cobertura V8 y matriz de trazabilidad de las 15 HU.
+- **2026-11-27:** 16 contratos DOM y 6 pruebas controladas de la API DNI/RUC; total Vitest elevado a 206.
+- **2026-11-27:** 14 integraciones aprobadas con Auth y Firestore Emulator, incluidos permisos y tiempo real.
+- **2026-11-27:** 14 E2E de rutas y adaptación preparadas; ejecución pendiente por bloqueo de descarga de Chromium en el entorno.
