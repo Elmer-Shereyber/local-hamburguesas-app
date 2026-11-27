@@ -512,6 +512,8 @@ También se fijó `@grpc/grpc-js` 1.14.7 mediante `overrides`; `npm audit` volvi
 
 En la primera ejecución en Windows, Playwright no pudo iniciar el servidor porque la configuración dependía de `python3`, que no estaba instalado. Se sustituyó por `scripts/static-server.js`, un servidor estático basado únicamente en Node.js. De esta manera las E2E funcionan en Windows sin instalar Python ni habilitar alias de Microsoft Store.
 
+La primera ejecución real de Playwright aprobó 13 de 14 casos y detectó un desborde horizontal de 29 píxeles en `admin/reportes.html` al usar un viewport de 375 píxeles. Se conservó la prueba estricta y se corrigió la pantalla: filtro en una columna, botones en cuadrícula de dos columnas, pestañas apiladas, tarjetas sin ancho mínimo y encabezados flexibles. Este hallazgo demuestra que la prueba E2E identificó un defecto responsive que no era visible en las pruebas unitarias ni DOM.
+
 ## Formato para documentar cada prueba
 
 Cada prueba añadida se registrará con esta información:
