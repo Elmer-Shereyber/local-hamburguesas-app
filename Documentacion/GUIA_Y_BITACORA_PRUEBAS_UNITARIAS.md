@@ -475,7 +475,7 @@ Tests       206 passed (206)
 
 **Fecha:** 27 de noviembre de 2026
 
-Se configuraron Auth y Firestore Emulator mediante `firebase.json`, `firestore.test.rules` y una configuración Vitest independiente. Las 14 pruebas de integración validan:
+Se configuraron Auth y Firestore Emulator mediante `firebase.json`, `firestore.test.rules` y una configuración Vitest independiente. La suite creció a 15 pruebas de integración al añadir el cierre administrativo restringido del pedido asociado a una devolución. Estas validan:
 
 - rechazo de acceso no autenticado;
 - lectura autenticada;
@@ -492,7 +492,7 @@ Resultado:
 
 ```text
 Test Files  2 passed (2)
-Tests       14 passed (14)
+Tests       15 passed (15)
 ```
 
 ### Sesión 13 — Preparación de Playwright
@@ -521,7 +521,31 @@ Running 14 tests using 1 worker
 14 passed (11.0s)
 ```
 
-Las once rutas respondieron correctamente y las pantallas principales no presentaron desborde horizontal en 375, 768 ni 1440 píxeles. El acumulado certificado quedó en **234 pruebas aprobadas y 0 fallidas**: 206 de Vitest, 14 de integración Firebase y 14 E2E.
+Las once rutas respondieron correctamente y las pantallas principales no presentaron desborde horizontal en 375, 768 ni 1440 píxeles.
+
+### Sesión 14 — Recorridos E2E funcionales autenticados
+
+**Fecha:** 27 de noviembre de 2026
+
+Playwright se conectó con Authentication y Firestore Emulator para ejecutar seis recorridos funcionales en navegador real:
+
+- inicio, recuperación de contraseña y cierre de sesión del administrador;
+- rechazo de credenciales incorrectas con mensaje genérico;
+- bloqueo de una ruta administrativa para la cajera;
+- registro del pedido, emisión de boleta, preparación en cocina y entrega;
+- reposición del mismo producto sin costo, prioridad en cocina y entrega;
+- devolución posterior a la reposición, Yape, voucher PDF, procesamiento administrativo y nota de crédito electrónica.
+
+La ampliación detectó dos detalles que se corrigieron antes del resultado definitivo: administración podía procesar la devolución pero no cerrar el estado del pedido asociado, y la nota de crédito de una reposición estaba tomando como documento fiscal la reposición gratuita en vez de la venta raíz. Las reglas permiten ahora únicamente que administración cambie `estadoDevolucion` y `notaCreditoNumero`, sin darle permiso para alterar la venta.
+
+La primera ejecución de esta ampliación aprobó 18 casos, pero el selector de la reposición buscaba erróneamente el número de boleta en lugar del distintivo de interfaz `REPOSICIÓN`. Se corrigió el selector y se repitió toda la suite. Resultado certificado en Chromium sobre Windows:
+
+```text
+Running 20 tests using 2 workers
+20 passed (12.6s)
+```
+
+El acumulado certificado quedó en **241 pruebas aprobadas y 0 fallidas**: 206 de Vitest, 15 de integración Firebase y 20 E2E con Playwright.
 
 ## Formato para documentar cada prueba
 
@@ -555,11 +579,12 @@ Cada prueba añadida se registrará con esta información:
 | 10 | 184 | 184 | 0 | Pruebas de integración y E2E |
 | 11 | 206 | 206 | 0 | Integrar Firebase Emulator |
 | 12 | 14 | 14 | 0 | Ejecutar E2E en Chromium |
-| 13 | 14 E2E definidas | 14 | 0 | Ampliar a recorridos funcionales autenticados |
+| 13 | 18 E2E | 18 | 0 | Corregir selector funcional de reposición |
+| 14 | 15 integración + 20 E2E | 35 | 0 | Ampliar los recorridos de las HU restantes |
 
 ## Próximo paso recomendado
 
-Ampliar Playwright con un recorrido funcional autenticado contra Auth/Firestore Emulator. Persistencia, tiempo real, permisos, API simulada, rutas y responsive ya tienen cobertura automatizada; archivos, impresión/PDF, sesión única e invalidación posterior al restablecimiento siguen requiriendo verificación funcional adicional.
+Continuar los recorridos funcionales de las HU aún no ejercitadas en navegador, especialmente disponibilidad del catálogo, gestión de productos y usuarios, reportes, sesión única e invalidación posterior al restablecimiento. El voucher PDF ya está cubierto como carga real; la descarga/impresión física sigue requiriendo una verificación específica.
 
 ## Historial de actualización
 
@@ -579,3 +604,5 @@ Ampliar Playwright con un recorrido funcional autenticado contra Auth/Firestore 
 - **2026-11-27:** 14 integraciones aprobadas con Auth y Firestore Emulator, incluidos permisos y tiempo real.
 - **2026-11-27:** 14 E2E de rutas y adaptación preparadas; ejecución pendiente por bloqueo de descarga de Chromium en el entorno.
 - **2026-11-27:** 14 E2E aprobadas en Chromium sobre Windows; corregido el desborde móvil de Reportes y acumulado elevado a 234 pruebas aprobadas.
+- **2026-11-27:** 15 integraciones aprobadas; se restringió el cierre administrativo del pedido a los campos de devolución y nota de crédito.
+- **2026-11-27:** 20 E2E aprobadas en Chromium sobre Windows, incluidos pedido, cocina, reposición, devolución, voucher y nota de crédito; acumulado elevado a 241 pruebas.
