@@ -273,6 +273,71 @@ Se verificó posteriormente mediante GitHub que el commit remoto conserva el men
 
 Durante `git add` Windows mostró la advertencia `LF will be replaced by CRLF`. No representa un error de las pruebas ni una corrupción: informa sobre la normalización de finales de línea entre Git y Windows.
 
+## Estrategia de cobertura por historias de usuario
+
+A partir de este punto, el trabajo se organiza según las 15 historias de usuario de la carpeta `Documentacion`. Para cada HU se seguirá el mismo ciclo:
+
+1. comparar criterios de aceptación con HTML y JavaScript;
+2. registrar cumplimientos, discrepancias y riesgos;
+3. clasificar cada criterio como prueba unitaria, DOM, integración o extremo a extremo;
+4. extraer reglas puras cuando estén acopladas a la interfaz o Firebase;
+5. escribir la suite completa de la etapa;
+6. ejecutar y analizar resultados;
+7. corregir defectos sin alterar arbitrariamente el requisito;
+8. medir cobertura y crear un commit.
+
+Orden de trabajo:
+
+| Etapa | Historia | Tema |
+|---:|---|---|
+| 1 | HU-01 | Registrar pedido |
+| 2 | HU-02 | Emitir comprobante |
+| 3 | HU-03 | Consultar pedidos |
+| 4 | HU-04 | Registrar reposición |
+| 5 | HU-05 | Solicitar devolución |
+| 6 | HU-06 | Procesar devolución |
+| 7 | HU-07 | Gestionar disponibilidad |
+| 8 | HU-08 | Visualizar pedidos en cocina |
+| 9 | HU-09 | Actualizar estados de productos |
+| 10 | HU-10 | Gestionar usuarios |
+| 11 | HU-11 | Gestionar productos |
+| 12 | HU-12 | Consultar ganancias e incidencias |
+| 13 | HU-13 | Iniciar sesión |
+| 14 | HU-14 | Cerrar sesión |
+| 15 | HU-15 | Recuperar contraseña |
+
+## Auditoría previa de HU-01 — Registrar pedido
+
+Se compararon `Documentacion/1_Gestionar_Pedidos.md`, `public/cajera/registrar-pedido.html` y `public/cajera/registrar-pedido.js`.
+
+| Criterio | Estado observado | Evidencia y decisión de prueba |
+|---|---|---|
+| CA01 Selección disponible | Implementado en interfaz | Solo los productos disponibles reciben evento de selección y los que dejan de estar disponibles se retiran del carrito. Requiere separar la regla de selección y posteriormente probar el DOM. |
+| CA02 Mínimo un producto | Implementado, acoplado | `validarFormulario` exige `carrito.length > 0`. Se extraerá una regla pura. |
+| CA03 Cantidad 1–10 | Implementado, acoplado | Los botones impiden superar 10 y eliminan al llegar a 0. Falta una validación de dominio importable y resistente a llamadas externas a la UI. |
+| CA04 Detalle opcional, máximo 50 | **No cumple** | El HTML muestra “máx 300” y usa `maxlength="300"`. La documentación establece 50. Se corregirá el código y se probarán 0, 49, 50 y 51 caracteres. |
+| CA05 Cálculo automático | Implementado, acoplado | Se suma `precio × cantidad` dentro de `renderCarrito`. Se extraerá `calcularTotalPedido`. |
+| CA06 Modalidad permitida | Parcial | El HTML ofrece las cinco modalidades correctas, pero JavaScript solo comprueba que el valor no esté vacío. Se añadirá una lista blanca de modalidades. |
+| CA07 Pago híbrido exacto | Parcial | Compara la suma redondeada con el total, pero no exige realmente dos medios positivos pese al texto “2 o más medios”. Se definirá y probará esa regla. |
+| CA08 Sin verificación externa | Cumple | El registro solo conserva la modalidad declarada. No debe introducirse ninguna dependencia bancaria en pruebas unitarias. |
+| CA09 Campos obligatorios | Parcial | Se controla carrito y modalidad; otras reglas dependen solo de restricciones HTML. Se centralizará la validación. |
+| CA10 Borrador no visible en cocina | Cumple | El pedido permanece en `sessionStorage` y no se escribe en Firestore hasta emitir el comprobante. La creación del borrador podrá probarse de forma unitaria; la invisibilidad en cocina corresponde a integración. |
+
+### Decisión técnica para HU-01
+
+Se creará un módulo puro de reglas de pedido, independiente del DOM y Firebase. Incluirá como mínimo:
+
+- validación de disponibilidad;
+- validación de cantidad;
+- validación de detalle;
+- cálculo del total;
+- validación de modalidad;
+- suma y validación del pago híbrido;
+- validación integral del borrador;
+- creación del snapshot de productos.
+
+Las pruebas unitarias cubrirán entradas normales, límites e inválidas. Las verificaciones visuales y de persistencia quedarán identificadas para sus niveles correspondientes, evitando llamar “unitaria” a una prueba que realmente depende del navegador o de Firestore.
+
 ## Formato para documentar cada prueba
 
 Cada prueba añadida se registrará con esta información:
@@ -302,7 +367,7 @@ Cada prueba añadida se registrará con esta información:
 
 ## Próximo paso
 
-Ampliar `formatCurrency` con casos límite y aprender pruebas parametrizadas.
+Crear el módulo puro de reglas de HU-01 y su suite unitaria completa.
 
 ## Historial de actualización
 
@@ -312,3 +377,4 @@ Ampliar `formatCurrency` con casos límite y aprender pruebas parametrizadas.
 - **2026-11-27:** registro de PU-UTIL-001, incluyendo el intento fallido por archivo no guardado y su ejecución aprobada.
 - **2026-11-27:** registro de PU-UTIL-002, errores de sintaxis y estructura encontrados, y ejecución final con dos pruebas aprobadas.
 - **2026-11-27:** verificación del primer commit de pruebas publicado en GitHub.
+- **2026-11-27:** definición del plan por 15 HU y auditoría de cumplimiento de HU-01.
