@@ -198,4 +198,73 @@ test.describe.serial('E2E funcional autenticado con Firebase Emulator', () => {
     await cajeraContext.close();
     await adminContext.close();
   });
+
+  test('catálogo en tiempo real: administración gestiona y cocina cambia disponibilidad para caja', async ({ browser }) => {
+    const adminContext = await browser.newContext();
+    const cocinaContext = await browser.newContext();
+    const cajeraContext = await browser.newContext();
+    const admin = await adminContext.newPage();
+    const cocina = await cocinaContext.newPage();
+    const cajera = await cajeraContext.newPage();
+
+    await iniciarSesion(admin, 'admin@empresa.pe', 'Admin123!', '/admin/index.html');
+    await admin.goto('/admin/productos.html');
+    await expect(admin.locator('#stat-total')).toHaveText('2', { timeout: 20000 });
+
+    await admin.locator('#btn-abrir-crear').click();
+    await admin.locator('#crear-nombre').fill('Papas E2E');
+    await admin.locator('#crear-precio').fill('7.50');
+    await admin.locator('input[name="crear-tipo"][value="Servicio inmediato"]').check();
+    await expect(admin.locator('#crear-nombre-feedback')).toContainText('Nombre disponible');
+    admin.once('dialog', (dialog) => dialog.accept());
+    await admin.locator('#btn-submit-crear').click();
+
+    let filaProducto = admin.locator('#productos-tbody tr', { hasText: 'Papas E2E' });
+    await expect(filaProducto).toContainText('S/ 7.50', { timeout: 20000 });
+    await expect(filaProducto).toContainText('Servicio inmediato');
+    await expect(filaProducto).toContainText('Disponible');
+    await expect(admin.locator('#stat-total')).toHaveText('3');
+
+    await filaProducto.locator('.btn-editar').click();
+    await admin.locator('#editar-nombre').fill('Papas E2E Grandes');
+    await admin.locator('#editar-precio').fill('8.00');
+    await expect(admin.locator('#editar-tipo-badge')).toContainText('Servicio inmediato');
+    admin.once('dialog', (dialog) => dialog.accept());
+    await admin.locator('#btn-submit-editar').click();
+    filaProducto = admin.locator('#productos-tbody tr', { hasText: 'Papas E2E Grandes' });
+    await expect(filaProducto).toContainText('S/ 8.00', { timeout: 20000 });
+
+    await iniciarSesion(cocina, 'cocina01', 'Cocina123!', '/cocina/pedidos.html');
+    await cocina.goto('/cocina/disponibilidad.html');
+    const filaCocina = cocina.locator('#productos-tbody tr', { hasText: 'Papas E2E Grandes' });
+    await expect(filaCocina).toContainText('Disponible', { timeout: 20000 });
+
+    await iniciarSesion(cajera, 'cajera01', 'Cajera123!', '/cajera/registrar-pedido.html');
+    const tarjetaCaja = cajera.locator('#productos-grid .product-card', { hasText: 'Papas E2E Grandes' });
+    await expect(tarjetaCaja).toBeVisible({ timeout: 20000 });
+    await expect(tarjetaCaja).not.toHaveClass(/disabled/);
+
+    await filaCocina.getByRole('button', { name: 'Marcar No Disponible' }).click();
+    await expect(filaCocina).toContainText('No disponible');
+    await expect(tarjetaCaja).toHaveClass(/disabled/, { timeout: 20000 });
+    await expect(tarjetaCaja).toContainText('No disponible');
+    await expect(filaProducto).toContainText('No disponible');
+
+    await filaCocina.getByRole('button', { name: 'Marcar Disponible' }).click();
+    await expect(filaCocina).toContainText('Disponible');
+    await expect(tarjetaCaja).not.toHaveClass(/disabled/, { timeout: 20000 });
+
+    await filaProducto.locator('.btn-eliminar').click();
+    await expect(admin.locator('#eliminar-nombre-display')).toHaveText('Papas E2E Grandes');
+    admin.once('dialog', (dialog) => dialog.accept());
+    await admin.locator('#btn-confirmar-eliminar').click();
+    await expect(filaProducto).toHaveCount(0, { timeout: 20000 });
+    await expect(filaCocina).toHaveCount(0, { timeout: 20000 });
+    await expect(tarjetaCaja).toHaveCount(0, { timeout: 20000 });
+    await expect(admin.locator('#stat-total')).toHaveText('2');
+
+    await adminContext.close();
+    await cocinaContext.close();
+    await cajeraContext.close();
+  });
 });
