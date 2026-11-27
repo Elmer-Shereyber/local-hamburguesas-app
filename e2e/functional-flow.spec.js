@@ -267,4 +267,37 @@ test.describe.serial('E2E funcional autenticado con Firebase Emulator', () => {
     await cocinaContext.close();
     await cajeraContext.close();
   });
+
+  test('reportes administrativos: reconcilia venta, devolución, neto e incidencias del día', async ({ browser }) => {
+    const adminContext = await browser.newContext();
+    const admin = await adminContext.newPage();
+
+    await iniciarSesion(admin, 'admin@empresa.pe', 'Admin123!', '/admin/index.html');
+    await admin.goto('/admin/reportes.html');
+
+    await expect(admin.locator('#kpi-ventas-totales')).toHaveText('S/ 15.00', { timeout: 20000 });
+    await expect(admin.locator('#kpi-devoluciones')).toHaveText('S/ 15.00');
+    await expect(admin.locator('#kpi-devoluciones-conteo')).toContainText('1 reembolsos realizados');
+    await expect(admin.locator('#kpi-monto-neto')).toHaveText('S/ 0.00');
+    await expect(admin.locator('#kpi-total-pedidos')).toHaveText('2');
+    await expect(admin.locator('#pay-efectivo-detail')).toContainText('Bruto: S/ 15.00');
+    await expect(admin.locator('#lista-pedidos-incidencias')).toContainText('B001-000001');
+    await expect(admin.locator('#lista-pedidos-incidencias')).toContainText('Hamburguesa Clásica');
+
+    await admin.locator('#tab-btn-incidencias').click();
+    await expect(admin.locator('#panel-incidencias')).toBeVisible();
+    await expect(admin.locator('#conteo-reposiciones')).toContainText('1 reposiciones');
+    await expect(admin.locator('#conteo-devoluciones')).toContainText('1 devoluciones');
+    await expect(admin.locator('#reposiciones-tbody')).toContainText('Hamburguesa Clásica');
+    await expect(admin.locator('#devoluciones-reporte-tbody')).toContainText('Producto en mal estado');
+    await expect(admin.locator('#motivos-lista-container')).toContainText('Producto en mal estado');
+
+    await admin.locator('#devoluciones-reporte-tbody .btn-ver-voucher').click();
+    await expect(admin.locator('#modal-visor')).toBeVisible();
+    await expect(admin.locator('#visor-meta')).toContainText('S/ 15.00');
+    await expect(admin.locator('#visor-content iframe')).toBeVisible();
+    await expect(admin.locator('#btn-descargar-voucher')).toHaveAttribute('download', 'voucher-prueba.pdf');
+
+    await adminContext.close();
+  });
 });
