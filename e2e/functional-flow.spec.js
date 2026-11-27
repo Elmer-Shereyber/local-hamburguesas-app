@@ -335,8 +335,13 @@ test.describe.serial('E2E funcional autenticado con Firebase Emulator', () => {
 
     await expect(admin.locator('#stat-activas')).toHaveText('2 / 2', { timeout: 20000 });
     await expect(admin.locator('#usuarios-tbody')).toContainText('@cajerae2e');
+    const tokenAdmin = await admin.evaluate(async () => {
+      const { auth } = await import('../shared/firebase-config.js');
+      return auth.currentUser.getIdToken();
+    });
     const documento = await admin.request.get(
-      'http://127.0.0.1:8085/v1/projects/demo-burger-local/databases/(default)/documents/usuarios/cajera'
+      'http://127.0.0.1:8085/v1/projects/demo-burger-local/databases/(default)/documents/usuarios/cajera',
+      { headers: { Authorization: `Bearer ${tokenAdmin}` } }
     );
     expect(documento.ok()).toBe(true);
     const datosDocumento = await documento.json();
