@@ -92,7 +92,7 @@ describe('HU-01 - Registrar pedido', () => {
     });
   });
 
-  describe('CA04 - Detalle opcional de máximo 50 caracteres', () => {
+  describe('CA04 - Detalle opcional de máximo 300 caracteres', () => {
     it('acepta un detalle vacío', () => {
       expect(esDetalleValido('')).toBe(true);
     });
@@ -101,17 +101,17 @@ describe('HU-01 - Registrar pedido', () => {
       expect(esDetalleValido(undefined)).toBe(true);
     });
 
-    it('acepta un detalle con exactamente 50 caracteres', () => {
+    it('acepta un detalle con exactamente 300 caracteres', () => {
       const detalle = 'a'.repeat(MAX_CARACTERES_DETALLE);
 
-      expect(detalle).toHaveLength(50);
+      expect(detalle).toHaveLength(300);
       expect(esDetalleValido(detalle)).toBe(true);
     });
 
-    it('rechaza un detalle con 51 caracteres', () => {
+    it('rechaza un detalle con 301 caracteres', () => {
       const detalle = 'a'.repeat(MAX_CARACTERES_DETALLE + 1);
 
-      expect(detalle).toHaveLength(51);
+      expect(detalle).toHaveLength(301);
       expect(esDetalleValido(detalle)).toBe(false);
     });
 
@@ -384,7 +384,7 @@ describe('HU-01 - Registrar pedido', () => {
             cantidad: 11
           })
         ],
-        detalle: 'a'.repeat(51),
+        detalle: 'a'.repeat(301),
         modalidadPago: 'Tarjeta'
       });
 

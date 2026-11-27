@@ -1,6 +1,13 @@
 import { requireAuth } from '../shared/auth.js';
 import { onProductosChange } from '../shared/db.js';
 import { formatCurrency, showAlert } from '../shared/utils.js';
+import {
+    calcularTotalPedido,
+    crearBorradorPedido,
+    esCantidadValida,
+    sumarPagoHibrido,
+    validarBorradorPedido
+} from '../shared/pedido-rules.js';
 
 requireAuth('cajera');
 
@@ -26,6 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     detallePedido.addEventListener('input', () => {
         detalleCounter.textContent = detallePedido.value.length;
+        validarFormulario();
     });
 
     let productos = [];
@@ -73,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function agregarAlCarrito(producto) {
         const item = carrito.find(i => i.producto.id === producto.id);
         if (item) {
-            if (item.cantidad < 10) item.cantidad++;
+            if (esCantidadValida(item.cantidad + 1)) item.cantidad++;
             else showAlert("La cantidad máxima por producto es 10.");
         } else {
             carrito.push({ producto, cantidad: 1 });
@@ -90,7 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const item = carrito.find(i => i.producto.id === productoId);
         if (item) {
             const nuevaCat = item.cantidad + delta;
-            if (nuevaCat > 0 && nuevaCat <= 10) {
+            if (esCantidadValida(nuevaCat)) {
                 item.cantidad = nuevaCat;
             } else if (nuevaCat > 10) {
                 showAlert("La cantidad máxima por producto es 10.");
@@ -114,12 +122,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         carritoContainer.innerHTML = '';
-        let total = 0;
-
         carrito.forEach(item => {
-            const subtotal = item.producto.precio * item.cantidad;
-            total += subtotal;
-
             const div = document.createElement('div');
             div.className = 'cart-item';
             div.innerHTML = `
@@ -137,6 +140,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             carritoContainer.appendChild(div);
         });
 
+        const total = calcularTotalPedido(carrito);
         totalMontoSpan.textContent = formatCurrency(total);
         totalMontoSpan.setAttribute('data-total', total);
         validarFormulario();
@@ -165,6 +169,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const hibridoInputs = document.querySelectorAll('.hibrido-input');
     const hibridoFeedback = document.getElementById('hibrido-feedback');
 
+    function obtenerPagosHibridos() {
+        return {
+            efectivo: Number(document.getElementById('hibrido-efectivo').value),
+            yape: Number(document.getElementById('hibrido-yape').value),
+            plin: Number(document.getElementById('hibrido-plin').value),
+            transferencia: Number(document.getElementById('hibrido-transferencia').value)
+        };
+    }
+
     hibridoInputs.forEach(input => {
         // Prevenir teclas extrañas (e, -, +)
         input.addEventListener('keydown', (e) => {
@@ -183,6 +196,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function actualizarFeedbackHibrido(totalPedido, sumaHibrido) {
         if (!hibridoFeedback) return;
+
+        if (!Number.isFinite(sumaHibrido) || sumaHibrido < 0) {
+            hibridoFeedback.style.backgroundColor = '#FEE2E2';
+            hibridoFeedback.style.borderColor = '#FCA5A5';
+            hibridoFeedback.style.color = '#991B1B';
+            hibridoFeedback.innerHTML = '<div style="font-size:0.88rem;font-weight:700;">⚠️ Ingrese montos válidos y no negativos</div>';
+            return;
+        }
 
         if (totalPedido <= 0) {
             hibridoFeedback.style.backgroundColor = '#F1F5F9';
@@ -234,68 +255,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function validarFormulario() {
-        const total = parseFloat(totalMontoSpan.getAttribute('data-total') || 0);
-        let esValido = carrito.length > 0 && modalidadPago.value !== '';
-        
+        const total = Number(totalMontoSpan.getAttribute('data-total') || 0);
+        const pagosHibridos = obtenerPagosHibridos();
+        const validacion = validarBorradorPedido({
+            productos: carrito,
+            detalle: detallePedido.value,
+            modalidadPago: modalidadPago.value,
+            pagosHibridos
+        });
+
         if (modalidadPago.value === 'Híbrido') {
-            let sumaHibrido = 0;
-            hibridoInputs.forEach(input => {
-                const val = parseFloat(input.value);
-                if (!isNaN(val) && val >= 0) {
-                    sumaHibrido += val;
-                }
-            });
-
-            actualizarFeedbackHibrido(total, sumaHibrido);
-
-            if (carrito.length === 0 || sumaHibrido.toFixed(2) !== total.toFixed(2)) {
-                esValido = false;
+            let sumaHibrido;
+            try {
+                sumaHibrido = sumarPagoHibrido(pagosHibridos);
+            } catch {
+                sumaHibrido = Number.NaN;
             }
+            actualizarFeedbackHibrido(total, sumaHibrido);
         }
-
-        btnRegistrar.disabled = !esValido;
+        btnRegistrar.disabled = !validacion.valido;
     }
 
     btnRegistrar.addEventListener('click', () => {
-        const total = parseFloat(totalMontoSpan.getAttribute('data-total'));
-        
-        // Snapshot de los productos según las reglas del prompt
-        const productosSnapshot = carrito.map(item => ({
-            id: item.producto.id,
-            nombre: item.producto.nombre,
-            precio: item.producto.precio,
-            tipo: item.producto.tipo,
-            cantidad: item.cantidad,
-            estado: 'Pendiente' // Estado inicial para cada producto
-        }));
-
-        let pagoHibridoEfectivo = 0;
-        let pagoHibridoYape = 0;
-        let pagoHibridoPlin = 0;
-        let pagoHibridoTransferencia = 0;
-
-        if (modalidadPago.value === 'Híbrido') {
-            pagoHibridoEfectivo = parseFloat(document.getElementById('hibrido-efectivo').value) || 0;
-            pagoHibridoYape = parseFloat(document.getElementById('hibrido-yape').value) || 0;
-            pagoHibridoPlin = parseFloat(document.getElementById('hibrido-plin').value) || 0;
-            pagoHibridoTransferencia = parseFloat(document.getElementById('hibrido-transferencia').value) || 0;
+        try {
+            const pedidoDraft = crearBorradorPedido({
+                carrito,
+                detalle: detallePedido.value,
+                modalidadPago: modalidadPago.value,
+                pagosHibridos: obtenerPagosHibridos()
+            });
+            sessionStorage.setItem('pedidoBorrador', JSON.stringify(pedidoDraft));
+            window.location.href = 'emitir-comprobante.html';
+        } catch (error) {
+            console.error('No se pudo crear el borrador:', error);
+            showAlert('Revise los productos, cantidades y modalidad de pago.');
+            validarFormulario();
         }
-
-        const pedidoDraft = {
-            productos: productosSnapshot,
-            total: total,
-            detalle: detallePedido.value.trim(),
-            modalidadPago: modalidadPago.value,
-            pagoHibridoEfectivo,
-            pagoHibridoYape,
-            pagoHibridoPlin,
-            pagoHibridoTransferencia,
-            estadoGeneral: 'Pendiente', // El pedido empieza como Pendiente
-            // Aún no está habilitado para cocina (falta comprobante), pero lo guardaremos en sessionStorage
-        };
-
-        // Guardamos en SessionStorage para pasarlo a la pantalla de comprobante
-        sessionStorage.setItem('pedidoBorrador', JSON.stringify(pedidoDraft));
-        window.location.href = 'emitir-comprobante.html';
     });
 });

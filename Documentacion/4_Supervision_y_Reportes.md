@@ -63,14 +63,14 @@ Permitir que el administrador gestione las cuentas de cajera y cocina, mantenga 
 
 #### Pestaña Ganancias
 
-- **CA04. Total de ventas:** el sistema muestra el monto total vendido en el rango seleccionado, sumando el total de todos los pedidos registrados (incluidos los pedidos de reposición con diferencia cobrada).
+- **CA04. Total de ventas:** el sistema muestra el monto total vendido en el rango seleccionado, sumando el total de todos los pedidos cobrados. Las reposiciones sin costo no incrementan las ventas.
 - **CA05. Desglose por modalidad de pago:** el sistema muestra cuánto se cobró en cada modalidad (Efectivo, Yape, Plin, Transferencia) dentro del rango seleccionado.
 - **CA06. Ventas por producto y desglose de pedidos:** el sistema muestra las ventas agrupadas por producto (cantidad y monto acumulado por identificador interno) y, en la sección inferior de detalles, presenta el desglose ordenado de pedidos completos del día/rango con su correlativo de comprobante, tipo de pago, productos y clientes, integrando directamente las incidencias asociadas (reposiciones y notas de crédito de devolución).
 - **CA07. Monto neto e impacto por fecha de reembolso:** el sistema muestra el total de devoluciones procesadas y el monto neto (ventas brutas menos reembolsos efectivos). Las devoluciones impactan financieramente el arqueo y balance en la fecha en que fueron efectivamente pagadas/procesadas por el administrador con su comprobante de pago, independientemente de la fecha en que se registró la solicitud original en caja.
 
 #### Pestaña Incidencias
 
-- **CA08. Listado de reposiciones:** el administrador puede ver todas las reposiciones registradas en el rango de fechas, con el pedido original, los productos afectados, el motivo y si tuvo diferencia cobrada.
+- **CA08. Listado de reposiciones:** el administrador puede ver todas las reposiciones registradas en el rango de fechas, con el pedido original, los productos afectados, el motivo y su condición de reposición sin costo.
 - **CA09. Listado de devoluciones:** el administrador puede ver todas las devoluciones del rango, con su estado (*Solicitada* / *Procesada*), el pedido original, los productos afectados, el motivo, el monto y, si está procesada, el comprobante adjunto registrado en *Procesar devolución*.
 - **CA10. Acceso al comprobante:** desde el listado de devoluciones procesadas, el administrador puede abrir o descargar el comprobante adjunto de cada una.
 - **CA11. Resumen de motivos:** el sistema muestra un resumen con la cantidad de casos por motivo (por ejemplo, "Producto en mal estado: 5 casos"), calculado sobre el total de reposiciones y devoluciones del rango seleccionado, para identificar problemas recurrentes.

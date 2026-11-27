@@ -9,7 +9,7 @@ Permitir registrar y resolver los reclamos sobre pedidos ya entregados, ya sea m
 - Una unidad de producto recibe una sola solución: si tiene reposición registrada no puede tener devolución sobre la misma unidad, y viceversa.
 - La disponibilidad de un producto la controla cocina mediante un interruptor manual (disponible / no disponible); no hay control de inventario por insumos.
 - La validación del reclamo (que el producto realmente esté mal) ocurre en persona entre cliente, cajera y cocina; el sistema no registra ninguna aprobación.
-- Al procesar una devolución válida, el sistema genera automáticamente la correspondiente Nota de Crédito Electrónica según la normativa de SUNAT (R.S. 114-2019/SUNAT y Catálogo N.° 09), distinguiendo entre Devolución total (código 06) y Devolución por ítem / parcial (código 07). Para diferencias de precio en reposiciones no se emite comprobante adicional (supuesto académico).
+- Al procesar una devolución válida, el sistema genera automáticamente la correspondiente Nota de Crédito Electrónica según la normativa de SUNAT (R.S. 114-2019/SUNAT y Catálogo N.° 09), distinguiendo entre Devolución total (código 06) y Devolución por ítem / parcial (código 07). Las reposiciones son del mismo producto y no tienen costo adicional.
 - No se manejan combos ni promociones.
 
 ---
@@ -25,15 +25,15 @@ Permitir registrar y resolver los reclamos sobre pedidos ya entregados, ya sea m
 
 - **CA01. Selección de pedido y productos:** desde un pedido del día en estado *Entregado*, la cajera selecciona uno o más productos y la cantidad a reponer de cada uno, sin superar las unidades que aún no tengan reposición ni devolución registrada.
 - **CA02. Motivo obligatorio:** la cajera elige un motivo de una lista fija (*Producto en mal estado*, *Error en la preparación*, *Producto incorrecto*, *Otro*). Puede agregar una observación de hasta 250 caracteres, obligatoria (mínimo 10 caracteres) si elige *Otro*.
-- **CA03. Mismo producto por defecto:** el sistema propone reponer el mismo producto, sin costo, si está disponible.
-- **CA04. Otro producto si no está disponible:** si el producto figura *No disponible*, el sistema ofrece solo productos *Disponibles* de igual o mayor precio. Los de menor precio no se ofrecen, porque este flujo no da vuelto.
-- **CA05. Sin alternativas disponibles:** si no existe ningún reemplazo de igual o mayor precio, el sistema no permite reponer esa unidad y muestra un mensaje con un botón para pasar a *Solicitar devolución*, sin guardar ningún registro pendiente.
-- **CA06. Cálculo y cobro de la diferencia:** si el reemplazo cuesta más, el sistema calcula la diferencia (precio × cantidad) y la cajera registra su modalidad de pago (Efectivo, Yape, Plin o Transferencia) antes de enviar la reposición a cocina.
-- **CA07. Generación del pedido de reposición:** al confirmar, el sistema crea un pedido nuevo vinculado al pedido reclamado, identificado como "Reposición del pedido #025", con total S/ 0.00 o la diferencia cobrada, en estado *Pendiente*.
+- **CA03. Mismo producto obligatorio:** el sistema permite reponer únicamente el mismo producto reclamado, sin costo, si está disponible en cocina.
+- **CA04. Producto no disponible:** si el producto original figura *No disponible*, esa unidad no puede reponerse y el sistema orienta a registrar una *Solicitud de devolución*, sin guardar una reposición pendiente.
+- **CA05. Sin productos alternativos:** este flujo no ofrece productos sustitutos de otro tipo ni calcula diferencias de precio.
+- **CA06. Reposición sin cobro:** la reposición siempre tiene importe S/ 0.00 y no solicita modalidad de pago.
+- **CA07. Generación del pedido de reposición:** al confirmar, el sistema crea un pedido nuevo vinculado al pedido reclamado, identificado como "Reposición del pedido #025", con total S/ 0.00 y estado *Pendiente*.
 - **CA08. Prioridad en cocina:** el pedido de reposición aparece en la pantalla de cocina con la etiqueta *Reposición*, al inicio de la cola, por delante de los pedidos *Pendientes* (sin desplazar los que ya están *En preparación*). Entre reposiciones se respeta el orden de registro.
 - **CA09. Indicador en el pedido original:** el pedido original muestra *Con reposición*, con los productos afectados, sin cambiar su estado general.
 - **CA10. Solo reemplazos:** el pedido de reposición contiene únicamente los productos de reemplazo. Productos adicionales se registran como un pedido nuevo e independiente.
-- **CA11. Reposición sobre reposición:** puede registrarse una nueva reposición sobre un pedido de reposición ya entregado, quedando todos los pedidos vinculados en cadena.
+- **CA11. Sin segunda reposición:** no puede registrarse una nueva reposición sobre un pedido de reposición. Si el cliente no queda conforme después de recibirla, solo puede solicitar una devolución vinculada para cerrar el caso.
 
 ---
 
@@ -55,7 +55,7 @@ Permitir registrar y resolver los reclamos sobre pedidos ya entregados, ya sea m
 - **CA07. Registro de la solicitud:** al confirmar, el sistema crea la solicitud vinculada al pedido, en estado *Solicitada*, con motivo, productos, monto, modalidad y datos de contacto.
 - **CA08. Indicador en el pedido:** el pedido muestra *Devolución solicitada*, con los productos afectados, sin cambiar su estado general.
 - **CA09. Visible para el administrador:** la solicitud queda disponible para ser procesada en la historia *Procesar devolución*.
-- **CA10. Devolución sobre pedido de reposición:** puede solicitarse sobre un pedido de reposición ya entregado; el monto máximo es lo efectivamente pagado en ese pedido puntual (la diferencia cobrada, si la hubo). Si el pedido de reposición no tuvo costo, no hay monto que devolver.
+- **CA10. Devolución posterior a reposición:** puede solicitarse sobre un pedido de reposición ya entregado. El monto se toma de los productos pagados en el pedido original vinculado, pues la reposición tuvo costo S/ 0.00; esta devolución cierra el caso.
 
 ---
 

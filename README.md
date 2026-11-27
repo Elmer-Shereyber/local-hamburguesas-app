@@ -15,7 +15,7 @@ Sistema web integral desarrollado para la atención en punto de venta, control d
   * Seguimiento de pedidos del día y confirmación de entrega al cliente.
 
 * **Épica 2: Gestión de Incidencias (Cajera y Administrador)**
-  * **Reposición de productos:** Reemplazo inmediato por el mismo producto o alternativa de igual/mayor precio con cobro de diferencia si aplica, enviando la comanda con prioridad a cocina.
+  * **Reposición de productos:** Reemplazo sin costo por el mismo producto, sujeto a disponibilidad, enviando la comanda con prioridad a cocina; si no está disponible, se deriva a devolución.
   * **Solicitud de Devolución:** Registro en caja con datos bancarios (Yape, Plin o Transferencia con N° de cuenta o CCI de 20 dígitos).
   * **Procesamiento de Reembolsos (Admin):** Registro del abono bancario adjuntando voucher digital de respaldo y auditoría de canal efectivo.
   * **Nota de Crédito Electrónica SUNAT:** Generación automática de comprobante (serie `BC01` o `FC01`) según R.S. 114-2019 y Catálogo N.° 09 (*06 - Devolución total* o *07 - Devolución por ítem*).

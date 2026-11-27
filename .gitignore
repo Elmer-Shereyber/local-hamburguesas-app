@@ -18,3 +18,7 @@ yarn-error.log*
 *.suo
 *.ntvs*
 *.njsproj
+
+# Reportes de pruebas
+coverage/
+.vitest/

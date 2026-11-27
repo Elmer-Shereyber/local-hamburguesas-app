@@ -8,7 +8,7 @@ Permitir que la cajera registre y consulte los pedidos realizados por los client
 - Registrar reposición y Solicitar devolución solo proceden sobre pedidos en estado *Entregado*.
 - Un producto dentro de un pedido tiene un único estado para toda su cantidad; no se maneja preparación parcial.
 - El total de un pedido se calcula automáticamente al registrarlo y no se modifica después.
-- Para diferencias de precio cobradas en una reposición no se emite comprobante adicional (se registra en el pedido de reposición). La emisión de Notas de Crédito Electrónicas oficiales SUNAT se gestiona al procesar devoluciones en la Épica de Incidencias (HU-06).
+- Una reposición sustituye únicamente por el mismo producto y no genera cobro adicional. La emisión de Notas de Crédito Electrónicas oficiales SUNAT se gestiona al procesar devoluciones en la Épica de Incidencias (HU-06).
 
 ---
 
@@ -24,7 +24,7 @@ Permitir que la cajera registre y consulte los pedidos realizados por los client
 - **CA01. Selección de productos:** el sistema muestra el listado completo de productos con su disponibilidad. Solo los productos disponibles pueden seleccionarse; los no disponibles se muestran deshabilitados.
 - **CA02. Mínimo de productos:** el pedido debe tener al menos 1 producto.
 - **CA03. Cantidad por producto:** cada producto debe tener una cantidad entre 1 y 10.
-- **CA04. Detalle opcional:** la cajera puede añadir un detalle general del pedido (opcional, máximo 50 caracteres).
+- **CA04. Detalle opcional:** la cajera puede añadir un detalle general del pedido (opcional, máximo 300 caracteres).
 - **CA05. Cálculo del total:** el sistema calcula automáticamente el total según los productos y cantidades seleccionados.
 - **CA06. Modalidad de pago:** la cajera selecciona una sola modalidad: Efectivo, Yape, Plin, Transferencia o Híbrido.
 - **CA07. Pago híbrido:** si la modalidad es Híbrido, la cajera digita el monto correspondiente a cada modalidad usada. El sistema valida que la suma sea igual al total antes de continuar.
@@ -104,8 +104,8 @@ Permitir que la cajera registre y consulte los pedidos realizados por los client
 #### Devoluciones y reposiciones
 
 - **CA10. Indicadores visibles:** *Con reposición*, *Devolución solicitada* o *Devolución procesada*, junto con los productos afectados.
-- **CA11. Solo sobre pedidos entregados:** las devoluciones y reposiciones solo se registran sobre pedidos *Entregados*, incluidos los generados por una reposición.
+- **CA11. Solo sobre pedidos entregados:** las devoluciones y reposiciones solo se registran sobre pedidos *Entregados*. Si el pedido es una reposición ya entregada, solo puede solicitarse una devolución; no se permite una segunda reposición.
 - **CA12. El estado de entrega se conserva:** una devolución o reposición no cambia el estado general del pedido original.
-- **CA13. Pedido de reposición:** genera un pedido nuevo, vinculado al que reemplaza, con su propio ciclo de estados. Se identifica como "Reposición del pedido #025", con total S/ 0.00 o la diferencia de precio, y aparece en cocina con etiqueta *Reposición* y prioridad al inicio de la cola (sin desplazar lo que ya está *En preparación*).
+- **CA13. Pedido de reposición:** genera un pedido nuevo, vinculado al que reemplaza, con el mismo producto reclamado y su propio ciclo de estados. Se identifica como "Reposición del pedido #025", tiene total S/ 0.00 y aparece en cocina con etiqueta *Reposición* y prioridad al inicio de la cola (sin desplazar lo que ya está *En preparación*).
 - **CA14. Consulta únicamente:** el registro de devoluciones y reposiciones se define en historias de usuario aparte.
-- **CA15. Cadena de reposiciones:** un pedido de reposición puede tener a su vez otra reposición o devolución; todos quedan vinculados entre sí.
+- **CA15. Cierre de la incidencia:** cada pedido original admite una única solución inicial (reposición o devolución). Si la reposición entregada no satisface al cliente, se permite solicitar una devolución vinculada que cierra el caso; no se encadenan reposiciones.

@@ -6,7 +6,7 @@
 - **Repositorio de trabajo:** `KohakuAzureFire/local-hamburguesas-app`
 - **Rama:** `pruebas-unitarias-guiadas`
 - **Inicio de la práctica:** 27 de noviembre de 2026
-- **Modalidad:** práctica guiada; el estudiante escribe y ejecuta las pruebas, y el asistente explica, revisa y documenta.
+- **Modalidad:** inició como práctica guiada y luego, por decisión del estudiante, se completó la implementación automatizada de las 15 HU, conservando esta bitácora como material de revisión y aprendizaje.
 
 ## Objetivo
 
@@ -377,7 +377,7 @@ No se encontraron fallos en la suite. Las 56 pruebas del módulo incluyen las it
 | CA01 | producto disponible, no disponible e inexistente | Aprobado |
 | CA02 | carrito vacío y con productos | Aprobado |
 | CA03 | límites 1 y 10; valores 0, 11, negativos, decimales y tipos inválidos | Aprobado |
-| CA04 | prueba provisional con límite 50; debe actualizarse a 300 tras reconciliar la documentación | Revisión requerida |
+| CA04 | límites reconciliados de 300 y 301 caracteres | Aprobado |
 | CA05 | uno o varios productos, estructura del carrito, redondeo y entradas inválidas | Aprobado |
 | CA06 | cinco modalidades permitidas y modalidades desconocidas | Aprobado |
 | CA07 | suma, dos medios, céntimos, monto incompleto, excedido, negativo y no numérico | Aprobado |
@@ -385,7 +385,7 @@ No se encontraron fallos en la suite. Las 56 pruebas del módulo incluyen las it
 | CA09 | pedido válido, híbrido válido, múltiples errores y campos obligatorios | Aprobado |
 | CA10 | snapshot independiente y borrador sin escritura en Firebase | Aprobado a nivel unitario |
 
-Estado: **HU-01A aprobada**. HU-01 todavía permanece abierta hasta integrar las reglas con la interfaz, corregir el límite visual de detalle, medir cobertura y ejecutar la regresión final.
+Estado histórico de la sesión: **HU-01A aprobada**. Posteriormente se integraron las reglas con la interfaz, se reconcilió el límite de 300 caracteres y se ejecutó la regresión final.
 
 ### Corrección de criterio — documentación desactualizada
 
@@ -394,6 +394,69 @@ Durante la preparación de HU-01B se confirmó que varias mejoras del código no
 Para CA04, el máximo de **300 caracteres** aparece de forma coherente en la etiqueta, el atributo `maxlength` y el contador de la interfaz. Se clasifica como cambio funcional intencional no documentado. Se conservará 300 y se actualizarán tanto la HU como `pedido-rules.js` y sus pruebas.
 
 Para el pago híbrido, la interfaz dice explícitamente “2 o más medios” mientras la lógica antigua permitía uno. Esto se clasifica como defecto de implementación, no como documentación obsoleta.
+
+### Sesión 08 — Integración y cierre de HU-01
+
+**Fecha:** 27 de noviembre de 2026
+
+Se integró `pedido-rules.js` con `public/cajera/registrar-pedido.js`. La interfaz ahora usa las mismas funciones probadas para cantidades, total, pago híbrido, validación integral y creación del borrador. También se actualizó CA04 a 300 caracteres en la historia y en las pruebas de frontera.
+
+Decisiones aplicadas:
+
+- se aceptan exactamente 300 caracteres y se rechazan 301;
+- Híbrido exige dos o más medios con monto positivo;
+- la suma debe coincidir con el total a nivel de céntimos;
+- las modalidades se validan mediante una lista permitida;
+- no se escribe en Firebase hasta emitir el comprobante.
+
+### Sesión 09 — Reglas automatizadas de HU-02 a HU-15
+
+**Fecha:** 27 de noviembre de 2026
+
+Se añadieron seis módulos puros y sus suites:
+
+| Dominio | Módulo | Suite | HU |
+|---|---|---|---|
+| Comprobantes | `comprobante-rules.js` | `comprobante-rules.test.js` | HU-02 |
+| Consulta | `consulta-pedidos-rules.js` | `consulta-pedidos-rules.test.js` | HU-03 |
+| Incidencias | `incidencia-rules.js` | `incidencia-rules.test.js` | HU-04 a HU-06 |
+| Cocina | `cocina-rules.js` | `cocina-rules.test.js` | HU-07 a HU-09 |
+| Administración | `admin-rules.js` | `admin-rules.test.js` | HU-10 a HU-12 |
+| Autenticación | `auth-rules.js` | `auth-rules.test.js` | HU-13 a HU-15 |
+
+Además, `utils.test.js` pasó de 2 a 32 pruebas para cubrir moneda, fechas, códigos, estados, alertas, clases, números en letras y normalización de comprobantes.
+
+La documentación de reposiciones también se alineó con el código vigente: solo se repone el mismo producto, sin costo, una sola vez; si no está disponible o la reposición no satisface, corresponde devolución.
+
+### Sesión 10 — Cobertura y regresión completa
+
+**Fecha:** 27 de noviembre de 2026
+
+Se instaló `@vitest/coverage-v8`, se creó `vitest.config.js` y se agregaron los scripts reproducibles:
+
+```powershell
+npm run test:run
+npm run test:coverage
+```
+
+Resultado final:
+
+```text
+Test Files  8 passed (8)
+Tests       184 passed (184)
+Failures    0
+```
+
+| Métrica | Cobertura |
+|---|---:|
+| Sentencias | 88.45 % (360/407) |
+| Ramas | 78.23 % (381/487) |
+| Funciones | 98.97 % (97/98) |
+| Líneas | 94.83 % (294/310) |
+
+Los umbrales automáticos son 80 % en sentencias, 70 % en ramas, 90 % en funciones y 90 % en líneas. La ejecución falla si una regresión coloca el total por debajo de ellos.
+
+La trazabilidad completa y los límites de la prueba unitaria están en `Documentacion/MATRIZ_PRUEBAS_UNITARIAS_15_HU.md`.
 
 ## Formato para documentar cada prueba
 
@@ -422,10 +485,13 @@ Cada prueba añadida se registrará con esta información:
 | 05 | 2 pruebas finales | 2 | 0 | Crear primer commit |
 | 06 | 2 verificadas en GitHub | 2 | 0 | Diseñar casos adicionales |
 | 07 | 58 | 58 | 0 | Integrar reglas HU-01 en la interfaz |
+| 08 | 58 | 58 | 0 | Extender a las demás HU |
+| 09 | 184 | 184 | 0 | Medir cobertura |
+| 10 | 184 | 184 | 0 | Pruebas de integración y E2E |
 
-## Próximo paso
+## Próximo paso recomendado
 
-Integrar las reglas aprobadas de HU-01 con `registrar-pedido.html` y `registrar-pedido.js`.
+Ejecutar pruebas de integración con Firebase Emulator Suite y después pruebas E2E del navegador. Esos niveles deben validar persistencia, tiempo real, seguridad por rol, APIs de DNI/RUC, navegación, archivos y PDFs; no deben presentarse como pruebas unitarias.
 
 ## Historial de actualización
 
@@ -438,3 +504,6 @@ Integrar las reglas aprobadas de HU-01 con `registrar-pedido.html` y `registrar-
 - **2026-11-27:** definición del plan por 15 HU y auditoría de cumplimiento de HU-01.
 - **2026-11-27:** HU-01A ejecutada con 56 pruebas de reglas y 58 pruebas totales sin fallos; CA04 queda pendiente de actualizar de 50 a 300.
 - **2026-11-27:** metodología corregida para reconciliar documentación desactualizada antes de modificar código o pruebas.
+- **2026-11-27:** HU-01 integrada con la interfaz y límites 300/301 reconciliados.
+- **2026-11-27:** reglas y suites añadidas para HU-02 a HU-15; utilidades ampliadas.
+- **2026-11-27:** regresión final de 184 pruebas, cobertura V8 y matriz de trazabilidad de las 15 HU.

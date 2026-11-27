@@ -4,7 +4,9 @@
   "description": "Sistema web integral desarrollado para la atención en punto de venta, control de preparación en cocina en tiempo real, gestión de incidencias posventa (reposiciones y reembolsos) y supervisión administrativa con emisión de comprobantes electrónicos (Boletas, Facturas y Notas de Crédito bajo normativa SUNAT).",
   "main": "index.js",
   "scripts": {
-    "test": "vitest"
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "repository": {
     "type": "git",
@@ -19,6 +21,7 @@
   },
   "homepage": "https://github.com/KohakuAzureFire/local-hamburguesas-app#readme",
   "devDependencies": {
+    "@vitest/coverage-v8": "^5.1.2",
     "vitest": "^5.1.2"
   }
 }

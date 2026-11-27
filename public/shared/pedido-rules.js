@@ -1,6 +1,6 @@
 export const MIN_CANTIDAD_PRODUCTO = 1;
 export const MAX_CANTIDAD_PRODUCTO = 10;
-export const MAX_CARACTERES_DETALLE = 50;
+export const MAX_CARACTERES_DETALLE = 300;
 
 export const MODALIDADES_PAGO = Object.freeze([
   'Efectivo',
@@ -36,7 +36,7 @@ export function esCantidadValida(cantidad) {
 }
 
 /**
- * CA04: el detalle es opcional y admite como máximo 50 caracteres.
+ * CA04: el detalle es opcional y admite como máximo 300 caracteres.
  */
 export function esDetalleValido(detalle) {
   if (detalle === undefined || detalle === null) {
