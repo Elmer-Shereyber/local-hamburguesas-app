@@ -514,6 +514,15 @@ En la primera ejecución en Windows, Playwright no pudo iniciar el servidor porq
 
 La primera ejecución real de Playwright aprobó 13 de 14 casos y detectó un desborde horizontal de 29 píxeles en `admin/reportes.html` al usar un viewport de 375 píxeles. Se conservó la prueba estricta y se corrigió la pantalla: filtro en una columna, botones en cuadrícula de dos columnas, pestañas apiladas, tarjetas sin ancho mínimo y encabezados flexibles. Este hallazgo demuestra que la prueba E2E identificó un defecto responsive que no era visible en las pruebas unitarias ni DOM.
 
+Después de descargar la corrección, se repitió la suite en Chromium sobre Windows. Resultado definitivo:
+
+```text
+Running 14 tests using 1 worker
+14 passed (11.0s)
+```
+
+Las once rutas respondieron correctamente y las pantallas principales no presentaron desborde horizontal en 375, 768 ni 1440 píxeles. El acumulado certificado quedó en **234 pruebas aprobadas y 0 fallidas**: 206 de Vitest, 14 de integración Firebase y 14 E2E.
+
 ## Formato para documentar cada prueba
 
 Cada prueba añadida se registrará con esta información:
@@ -546,11 +555,11 @@ Cada prueba añadida se registrará con esta información:
 | 10 | 184 | 184 | 0 | Pruebas de integración y E2E |
 | 11 | 206 | 206 | 0 | Integrar Firebase Emulator |
 | 12 | 14 | 14 | 0 | Ejecutar E2E en Chromium |
-| 13 | 14 E2E definidas | 0 certificadas | 0 fallos de aplicación | Instalar navegador en un entorno con acceso al CDN |
+| 13 | 14 E2E definidas | 14 | 0 | Ampliar a recorridos funcionales autenticados |
 
 ## Próximo paso recomendado
 
-Ejecutar las 14 E2E en un equipo con Chromium de Playwright y después ampliar Playwright con un recorrido funcional autenticado contra Auth/Firestore Emulator. Persistencia, tiempo real, permisos y API simulada ya tienen cobertura automatizada; archivos, impresión/PDF, sesión única e invalidación posterior al restablecimiento siguen requiriendo verificación funcional adicional.
+Ampliar Playwright con un recorrido funcional autenticado contra Auth/Firestore Emulator. Persistencia, tiempo real, permisos, API simulada, rutas y responsive ya tienen cobertura automatizada; archivos, impresión/PDF, sesión única e invalidación posterior al restablecimiento siguen requiriendo verificación funcional adicional.
 
 ## Historial de actualización
 
@@ -569,3 +578,4 @@ Ejecutar las 14 E2E en un equipo con Chromium de Playwright y después ampliar P
 - **2026-11-27:** 16 contratos DOM y 6 pruebas controladas de la API DNI/RUC; total Vitest elevado a 206.
 - **2026-11-27:** 14 integraciones aprobadas con Auth y Firestore Emulator, incluidos permisos y tiempo real.
 - **2026-11-27:** 14 E2E de rutas y adaptación preparadas; ejecución pendiente por bloqueo de descarga de Chromium en el entorno.
+- **2026-11-27:** 14 E2E aprobadas en Chromium sobre Windows; corregido el desborde móvil de Reportes y acumulado elevado a 234 pruebas aprobadas.

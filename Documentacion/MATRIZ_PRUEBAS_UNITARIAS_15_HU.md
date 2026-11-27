@@ -34,9 +34,9 @@ Después de la fase unitaria se añadieron los niveles que faltaban:
 | API DNI/RUC con proveedor simulado | `tests/persona-api.test.js` | 6 | 6 aprobadas |
 | Firestore Emulator: permisos, CRUD y tiempo real | `firestore.integration.test.js` | 9 | 9 aprobadas |
 | Authentication Emulator: acceso, error, logout y recuperación | `auth.integration.test.js` | 5 | 5 aprobadas |
-| Navegador real: rutas y adaptación 375/768/1440 px | `e2e/static-pages.spec.js` | 14 | Preparadas; requieren instalar Chromium de Playwright |
+| Navegador real: rutas y adaptación 375/768/1440 px | `e2e/static-pages.spec.js` | 14 | 14 aprobadas en Chromium sobre Windows |
 
-Total ejecutado y aprobado en el entorno de desarrollo: **220 pruebas** (206 de Vitest y 14 de Firebase Emulator). Hay además **14 E2E preparadas**. Su descarga de Chromium fue bloqueada con HTTP 403 por la red del entorno de automatización, por lo que no se registran falsamente como aprobadas.
+Total ejecutado y aprobado: **234 pruebas** (206 de Vitest, 14 de Firebase Emulator y 14 E2E con Playwright). Las E2E fueron certificadas el 27 de noviembre de 2026 en Chromium sobre Windows después de reemplazar el servidor Python por uno basado en Node.js y corregir el desborde responsive detectado en Reportes.
 
 Comandos:
 
@@ -100,8 +100,8 @@ Las pruebas generadas con `it.each` cuentan una vez por cada dato de la tabla; p
 4. No se encontraron pruebas automatizadas de reglas de seguridad de Firestore. Deben añadirse con Firebase Emulator Suite antes de considerar verificado el control de acceso.
 5. Las consultas de DNI/RUC ya se prueban con un proveedor simulado y errores controlados. La comprobación contra el proveedor real debe mantenerse como prueba manual o integración controlada para evitar que una caída externa rompa la suite.
 6. `firestore.test.rules` existe exclusivamente para el emulador y no se despliega automáticamente. Antes de usar reglas equivalentes en producción se debe contrastar cada permiso con el proyecto Firebase real.
-7. Las E2E añadidas validan rutas, estructura y adaptación visual. Todavía falta un recorrido funcional completo autenticado que conecte navegador, Auth Emulator y Firestore Emulator.
+7. Las E2E añadidas y aprobadas validan rutas, estructura y adaptación visual. Todavía falta un recorrido funcional completo autenticado que conecte navegador, Auth Emulator y Firestore Emulator.
 
 ## Interpretación correcta del resultado
 
-La ejecución verde demuestra las reglas aisladas, los contratos DOM y 14 integraciones con Firebase Emulator. Todavía no demuestra por sí sola que el proyecto Firebase real, el proveedor externo, el PDF o varios dispositivos funcionen juntos. Para afirmar que cada HU está completamente aceptada se necesita ejecutar las E2E en Chromium y completar el recorrido funcional autenticado indicado en los pendientes.
+La ejecución verde demuestra las reglas aisladas, los contratos DOM, 14 integraciones con Firebase Emulator y 14 verificaciones en Chromium. Todavía no demuestra por sí sola que el proyecto Firebase real, el proveedor externo, el PDF o varios dispositivos funcionen juntos. Para afirmar que cada HU está completamente aceptada se necesita completar el recorrido funcional autenticado indicado en los pendientes.
