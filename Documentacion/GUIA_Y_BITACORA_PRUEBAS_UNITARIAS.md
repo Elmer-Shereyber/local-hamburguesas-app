@@ -338,6 +338,53 @@ Se creará un módulo puro de reglas de pedido, independiente del DOM y Firebase
 
 Las pruebas unitarias cubrirán entradas normales, límites e inválidas. Las verificaciones visuales y de persistencia quedarán identificadas para sus niveles correspondientes, evitando llamar “unitaria” a una prueba que realmente depende del navegador o de Firestore.
 
+### Sesión 07 — HU-01A: reglas puras y suite automatizada
+
+**Fecha:** 27 de noviembre de 2026
+
+Se crearon localmente:
+
+- `public/shared/pedido-rules.js`;
+- `tests/pedido-rules.test.js`.
+
+El módulo separa del DOM y Firebase las reglas de disponibilidad, cantidades, detalle, total, modalidades, pago híbrido, validación integral, snapshot y borrador del pedido.
+
+Ejecución:
+
+```powershell
+npm test -- --run
+```
+
+Resultado:
+
+```text
+✓ tests/utils.test.js (2 tests) 5ms
+✓ tests/pedido-rules.test.js (56 tests) 12ms
+
+Test Files  2 passed (2)
+Tests       58 passed (58)
+Duration    243ms
+```
+
+No se encontraron fallos en la suite. Las 56 pruebas del módulo incluyen las iteraciones generadas por `it.each`: cada entrada de una tabla parametrizada cuenta como una prueba independiente.
+
+#### Trazabilidad unitaria de HU-01A
+
+| Criterio | Reglas cubiertas | Resultado |
+|---|---|---|
+| CA01 | producto disponible, no disponible e inexistente | Aprobado |
+| CA02 | carrito vacío y con productos | Aprobado |
+| CA03 | límites 1 y 10; valores 0, 11, negativos, decimales y tipos inválidos | Aprobado |
+| CA04 | detalle vacío, ausente, 50, 51 caracteres y tipo inválido | Aprobado |
+| CA05 | uno o varios productos, estructura del carrito, redondeo y entradas inválidas | Aprobado |
+| CA06 | cinco modalidades permitidas y modalidades desconocidas | Aprobado |
+| CA07 | suma, dos medios, céntimos, monto incompleto, excedido, negativo y no numérico | Aprobado |
+| CA08 | ausencia deliberada de verificación bancaria en el módulo | Conforme al alcance |
+| CA09 | pedido válido, híbrido válido, múltiples errores y campos obligatorios | Aprobado |
+| CA10 | snapshot independiente y borrador sin escritura en Firebase | Aprobado a nivel unitario |
+
+Estado: **HU-01A aprobada**. HU-01 todavía permanece abierta hasta integrar las reglas con la interfaz, corregir el límite visual de detalle, medir cobertura y ejecutar la regresión final.
+
 ## Formato para documentar cada prueba
 
 Cada prueba añadida se registrará con esta información:
@@ -364,10 +411,11 @@ Cada prueba añadida se registrará con esta información:
 | 04 | 2 intentos | 1 | 1 intento de configuración | Diseñar PU-UTIL-002 |
 | 05 | 2 pruebas finales | 2 | 0 | Crear primer commit |
 | 06 | 2 verificadas en GitHub | 2 | 0 | Diseñar casos adicionales |
+| 07 | 58 | 58 | 0 | Integrar reglas HU-01 en la interfaz |
 
 ## Próximo paso
 
-Crear el módulo puro de reglas de HU-01 y su suite unitaria completa.
+Integrar las reglas aprobadas de HU-01 con `registrar-pedido.html` y `registrar-pedido.js`.
 
 ## Historial de actualización
 
@@ -378,3 +426,4 @@ Crear el módulo puro de reglas de HU-01 y su suite unitaria completa.
 - **2026-11-27:** registro de PU-UTIL-002, errores de sintaxis y estructura encontrados, y ejecución final con dos pruebas aprobadas.
 - **2026-11-27:** verificación del primer commit de pruebas publicado en GitHub.
 - **2026-11-27:** definición del plan por 15 HU y auditoría de cumplimiento de HU-01.
+- **2026-11-27:** HU-01A aprobada con 56 pruebas de reglas y 58 pruebas totales sin fallos.
