@@ -132,6 +132,77 @@ Observaciones:
 - el archivo quedó con `"type": "commonjs"`, pero el código del proyecto usa módulos ES mediante `import` y `export`, por lo que se cambiará a `"type": "module"`;
 - PowerShell mostró caracteres como `atenciÃ³n` al utilizar `Get-Content` sin especificar UTF-8. Se comprobará el archivo con `Get-Content -Encoding utf8 package.json`.
 
+### Sesión 04 — Primera prueba unitaria automatizada
+
+**Fecha:** 27 de noviembre de 2026
+
+Se configuró el proyecto para usar módulos ES y Vitest:
+
+```json
+{
+  "scripts": {
+    "test": "vitest"
+  },
+  "type": "module",
+  "devDependencies": {
+    "vitest": "^5.1.2"
+  }
+}
+```
+
+Se creó `tests/utils.test.js` para probar `formatCurrency` de `public/shared/utils.js`.
+
+#### Primer intento
+
+Comando:
+
+```powershell
+npm test -- --run
+```
+
+Resultado:
+
+```text
+tests/utils.test.js (0 test)
+Error: No test suite found in file
+Test Files  1 failed
+Tests       no tests
+```
+
+Diagnóstico: el archivo estaba abierto en VS Code, pero aún no se había guardado. Vitest encontró el archivo físico vacío y, por ello, no registró ninguna llamada a `describe` o `it`.
+
+Corrección: guardar `tests/utils.test.js` y ejecutar nuevamente el mismo comando.
+
+#### Segundo intento
+
+Resultado:
+
+```text
+✓ tests/utils.test.js (1 test) 2ms
+  ✓ formatCurrency (1)
+    ✓ formatea un número entero con dos decimales 1ms
+
+Test Files  1 passed (1)
+Tests       1 passed (1)
+Duration    204ms
+```
+
+#### Prueba registrada
+
+| Campo | Valor |
+|---|---|
+| Identificador | PU-UTIL-001 |
+| Requisito asociado | Utilidad transversal de presentación monetaria |
+| Unidad bajo prueba | `formatCurrency` |
+| Objetivo | Comprobar que un entero se presenta como soles con dos decimales |
+| Entrada | `15` |
+| Resultado esperado | `S/ 15.00` |
+| Resultado obtenido | `S/ 15.00` |
+| Estado | Aprobada |
+| Observaciones | Primera ejecución exitosa después de guardar el archivo |
+
+Aprendizaje: el ejecutor, el archivo y la prueba son elementos diferentes. Que Vitest encuentre un archivo no significa que haya encontrado pruebas dentro de él.
+
 ## Formato para documentar cada prueba
 
 Cada prueba añadida se registrará con esta información:
@@ -155,13 +226,15 @@ Cada prueba añadida se registrará con esta información:
 | 01 | 0 | 0 | 0 | Preparar repositorio |
 | 02 | 0 | 0 | 0 | Instalar Vitest |
 | 03 | 0 | 0 | 0 | Configurar módulos y scripts |
+| 04 | 2 intentos | 1 | 1 intento de configuración | Diseñar PU-UTIL-002 |
 
 ## Próximo paso
 
-Configurar el proyecto como módulo ES y reemplazar el script de prueba de ejemplo por Vitest.
+Diseñar y ejecutar una segunda prueba de `formatCurrency` con un número decimal.
 
 ## Historial de actualización
 
 - **2026-11-27:** creación inicial de la guía y registro de versiones de Node.js y npm.
 - **2026-11-27:** registro del clon correcto, estado limpio y advertencia sobre el repositorio Git accidental en una carpeta superior.
 - **2026-11-27:** registro de la inicialización de npm, instalación de Vitest 5.1.2 y auditoría con cero vulnerabilidades.
+- **2026-11-27:** registro de PU-UTIL-001, incluyendo el intento fallido por archivo no guardado y su ejecución aprobada.
