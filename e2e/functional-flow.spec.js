@@ -119,7 +119,9 @@ test.describe.serial('E2E funcional autenticado con Firebase Emulator', () => {
     await reposicionCocina.getByRole('button', { name: 'Listo' }).click();
     await expect(reposicionCocina).toContainText('Listo');
 
-    const filaReposicion = cajera.locator('#pedidos-tbody tr', { hasText: 'Reposición de #B001-000001' });
+    const filaReposicion = cajera.locator('#pedidos-tbody tr').filter({
+      has: cajera.locator('.badge').filter({ hasText: /^REPOSICIÓN$/ })
+    });
     await expect(filaReposicion).toContainText('S/ 0.00', { timeout: 20000 });
     await expect(filaReposicion).toContainText('Listo');
     await filaReposicion.getByRole('button', { name: /Entregar/ }).click();
@@ -139,7 +141,9 @@ test.describe.serial('E2E funcional autenticado con Firebase Emulator', () => {
 
     await iniciarSesion(cajera, 'cajera01', 'Cajera123!', '/cajera/registrar-pedido.html');
     await cajera.goto('/cajera/consultar-pedidos.html');
-    const filaReposicion = cajera.locator('#pedidos-tbody tr', { hasText: 'Reposición de #B001-000001' });
+    const filaReposicion = cajera.locator('#pedidos-tbody tr').filter({
+      has: cajera.locator('.badge').filter({ hasText: /^REPOSICIÓN$/ })
+    });
     await expect(filaReposicion).toContainText('Entregado', { timeout: 20000 });
     await filaReposicion.locator('.btn-abrir-dev').click();
 
