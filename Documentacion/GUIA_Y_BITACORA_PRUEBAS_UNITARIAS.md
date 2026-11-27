@@ -278,13 +278,15 @@ Durante `git add` Windows mostró la advertencia `LF will be replaced by CRLF`. 
 A partir de este punto, el trabajo se organiza según las 15 historias de usuario de la carpeta `Documentacion`. Para cada HU se seguirá el mismo ciclo:
 
 1. comparar criterios de aceptación con HTML y JavaScript;
-2. registrar cumplimientos, discrepancias y riesgos;
-3. clasificar cada criterio como prueba unitaria, DOM, integración o extremo a extremo;
-4. extraer reglas puras cuando estén acopladas a la interfaz o Firebase;
-5. escribir la suite completa de la etapa;
-6. ejecutar y analizar resultados;
-7. corregir defectos sin alterar arbitrariamente el requisito;
-8. medir cobertura y crear un commit.
+2. determinar si cada discrepancia corresponde a documentación desactualizada, defecto de implementación o decisión pendiente;
+3. reconciliar el requisito antes de escribir o modificar pruebas;
+4. registrar cumplimientos, discrepancias y riesgos;
+5. clasificar cada criterio como prueba unitaria, DOM, integración o extremo a extremo;
+6. extraer reglas puras cuando estén acopladas a la interfaz o Firebase;
+7. escribir la suite completa de la etapa;
+8. ejecutar y analizar resultados;
+9. corregir defectos sin alterar arbitrariamente el requisito;
+10. medir cobertura y crear un commit.
 
 Orden de trabajo:
 
@@ -315,10 +317,10 @@ Se compararon `Documentacion/1_Gestionar_Pedidos.md`, `public/cajera/registrar-p
 | CA01 Selección disponible | Implementado en interfaz | Solo los productos disponibles reciben evento de selección y los que dejan de estar disponibles se retiran del carrito. Requiere separar la regla de selección y posteriormente probar el DOM. |
 | CA02 Mínimo un producto | Implementado, acoplado | `validarFormulario` exige `carrito.length > 0`. Se extraerá una regla pura. |
 | CA03 Cantidad 1–10 | Implementado, acoplado | Los botones impiden superar 10 y eliminan al llegar a 0. Falta una validación de dominio importable y resistente a llamadas externas a la UI. |
-| CA04 Detalle opcional, máximo 50 | **No cumple** | El HTML muestra “máx 300” y usa `maxlength="300"`. La documentación establece 50. Se corregirá el código y se probarán 0, 49, 50 y 51 caracteres. |
+| CA04 Detalle opcional | **Documentación desactualizada** | El HTML, la etiqueta y el contador implementan coherentemente un máximo de 300 caracteres. Se conservará el comportamiento actual y se actualizarán la HU y las pruebas para cubrir 0, 299, 300 y 301 caracteres. |
 | CA05 Cálculo automático | Implementado, acoplado | Se suma `precio × cantidad` dentro de `renderCarrito`. Se extraerá `calcularTotalPedido`. |
 | CA06 Modalidad permitida | Parcial | El HTML ofrece las cinco modalidades correctas, pero JavaScript solo comprueba que el valor no esté vacío. Se añadirá una lista blanca de modalidades. |
-| CA07 Pago híbrido exacto | Parcial | Compara la suma redondeada con el total, pero no exige realmente dos medios positivos pese al texto “2 o más medios”. Se definirá y probará esa regla. |
+| CA07 Pago híbrido exacto | **Defecto de implementación** | La propia interfaz indica “2 o más medios”, pero la validación acepta que un solo medio cubra el total. Se mantendrá el requisito de dos medios y se corregirá la lógica. |
 | CA08 Sin verificación externa | Cumple | El registro solo conserva la modalidad declarada. No debe introducirse ninguna dependencia bancaria en pruebas unitarias. |
 | CA09 Campos obligatorios | Parcial | Se controla carrito y modalidad; otras reglas dependen solo de restricciones HTML. Se centralizará la validación. |
 | CA10 Borrador no visible en cocina | Cumple | El pedido permanece en `sessionStorage` y no se escribe en Firestore hasta emitir el comprobante. La creación del borrador podrá probarse de forma unitaria; la invisibilidad en cocina corresponde a integración. |
@@ -375,7 +377,7 @@ No se encontraron fallos en la suite. Las 56 pruebas del módulo incluyen las it
 | CA01 | producto disponible, no disponible e inexistente | Aprobado |
 | CA02 | carrito vacío y con productos | Aprobado |
 | CA03 | límites 1 y 10; valores 0, 11, negativos, decimales y tipos inválidos | Aprobado |
-| CA04 | detalle vacío, ausente, 50, 51 caracteres y tipo inválido | Aprobado |
+| CA04 | prueba provisional con límite 50; debe actualizarse a 300 tras reconciliar la documentación | Revisión requerida |
 | CA05 | uno o varios productos, estructura del carrito, redondeo y entradas inválidas | Aprobado |
 | CA06 | cinco modalidades permitidas y modalidades desconocidas | Aprobado |
 | CA07 | suma, dos medios, céntimos, monto incompleto, excedido, negativo y no numérico | Aprobado |
@@ -384,6 +386,14 @@ No se encontraron fallos en la suite. Las 56 pruebas del módulo incluyen las it
 | CA10 | snapshot independiente y borrador sin escritura en Firebase | Aprobado a nivel unitario |
 
 Estado: **HU-01A aprobada**. HU-01 todavía permanece abierta hasta integrar las reglas con la interfaz, corregir el límite visual de detalle, medir cobertura y ejecutar la regresión final.
+
+### Corrección de criterio — documentación desactualizada
+
+Durante la preparación de HU-01B se confirmó que varias mejoras del código no fueron trasladadas a la documentación. Por ello, la documentación no se considerará automáticamente superior al código. Cada discrepancia se resolverá usando evidencia de consistencia entre interfaz, lógica, README y finalidad operativa.
+
+Para CA04, el máximo de **300 caracteres** aparece de forma coherente en la etiqueta, el atributo `maxlength` y el contador de la interfaz. Se clasifica como cambio funcional intencional no documentado. Se conservará 300 y se actualizarán tanto la HU como `pedido-rules.js` y sus pruebas.
+
+Para el pago híbrido, la interfaz dice explícitamente “2 o más medios” mientras la lógica antigua permitía uno. Esto se clasifica como defecto de implementación, no como documentación obsoleta.
 
 ## Formato para documentar cada prueba
 
@@ -426,4 +436,5 @@ Integrar las reglas aprobadas de HU-01 con `registrar-pedido.html` y `registrar-
 - **2026-11-27:** registro de PU-UTIL-002, errores de sintaxis y estructura encontrados, y ejecución final con dos pruebas aprobadas.
 - **2026-11-27:** verificación del primer commit de pruebas publicado en GitHub.
 - **2026-11-27:** definición del plan por 15 HU y auditoría de cumplimiento de HU-01.
-- **2026-11-27:** HU-01A aprobada con 56 pruebas de reglas y 58 pruebas totales sin fallos.
+- **2026-11-27:** HU-01A ejecutada con 56 pruebas de reglas y 58 pruebas totales sin fallos; CA04 queda pendiente de actualizar de 50 a 300.
+- **2026-11-27:** metodología corregida para reconciliar documentación desactualizada antes de modificar código o pruebas.
