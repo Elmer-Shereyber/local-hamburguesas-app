@@ -72,6 +72,39 @@ Conclusión:
 - El equipo puede continuar con la preparación del proyecto.
 - Antes de instalar dependencias se debe comprobar si la carpeta local es un clon Git o una descarga ZIP.
 
+### Sesión 02 — Preparación correcta del repositorio Git
+
+**Fecha:** 27 de noviembre de 2026
+
+La primera copia local provenía de una descarga ZIP denominada `local-hamburguesas-app-main`. Al ejecutar `git status` desde esa ubicación, Git encontró un repositorio inicializado accidentalmente en una carpeta superior del perfil de Windows. Como consecuencia, intentó enumerar archivos personales y carpetas protegidas.
+
+**Advertencia de seguridad operativa:** no se debe ejecutar `git add .`, `git commit` ni `git clean` dentro de la copia ZIP ni desde el perfil `C:\\Users\\kohah`. Esta situación no afectó el repositorio remoto.
+
+Se conservó la carpeta anterior como respaldo y se clonó correctamente la rama de trabajo:
+
+```powershell
+cd C:\Users\kohah\OneDrive\Desktop
+git clone -b pruebas-unitarias-guiadas https://github.com/KohakuAzureFire/local-hamburguesas-app.git local-hamburguesas-app-pruebas
+cd local-hamburguesas-app-pruebas
+git status
+```
+
+Resultado comprobado:
+
+```text
+On branch pruebas-unitarias-guiadas
+Your branch is up to date with 'origin/pruebas-unitarias-guiadas'.
+
+nothing to commit, working tree clean
+```
+
+Conclusión:
+
+- la copia de trabajo está conectada correctamente al fork;
+- se encuentra en la rama destinada a la práctica;
+- el árbol de trabajo está limpio;
+- ya es seguro instalar y registrar las dependencias de pruebas.
+
 ## Formato para documentar cada prueba
 
 Cada prueba añadida se registrará con esta información:
@@ -93,11 +126,13 @@ Cada prueba añadida se registrará con esta información:
 | Sesión | Pruebas ejecutadas | Aprobadas | Fallidas | Pendientes |
 |---|---:|---:|---:|---:|
 | 01 | 0 | 0 | 0 | Preparar repositorio |
+| 02 | 0 | 0 | 0 | Instalar Vitest |
 
 ## Próximo paso
 
-Comprobar el estado Git de la carpeta local antes de instalar Vitest.
+Inicializar npm e instalar Vitest dentro del clon correcto.
 
 ## Historial de actualización
 
 - **2026-11-27:** creación inicial de la guía y registro de versiones de Node.js y npm.
+- **2026-11-27:** registro del clon correcto, estado limpio y advertencia sobre el repositorio Git accidental en una carpeta superior.
