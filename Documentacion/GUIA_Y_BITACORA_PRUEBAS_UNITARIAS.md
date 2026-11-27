@@ -203,6 +203,52 @@ Duration    204ms
 
 Aprendizaje: el ejecutor, el archivo y la prueba son elementos diferentes. Que Vitest encuentre un archivo no significa que haya encontrado pruebas dentro de él.
 
+### Sesión 05 — Segundo caso y diferencia entre modificar y añadir una prueba
+
+**Fecha:** 27 de noviembre de 2026
+
+El objetivo fue conservar `PU-UTIL-001` y añadir `PU-UTIL-002` para comprobar `formatCurrency(18.5)`.
+
+#### Incidencia 1: marcador copiado como código
+
+Se copiaron literalmente los puntos suspensivos `...` de una plantilla explicativa. JavaScript no acepta `...` como una sentencia independiente y Vitest informó:
+
+```text
+RolldownError: Parse failure
+Unexpected token
+Tests no tests
+```
+
+Aprendizaje: las plantillas conceptuales deben reemplazarse por instrucciones reales antes de ejecutar. Un error de análisis sintáctico impide que Vitest registre incluso las pruebas válidas del archivo.
+
+#### Incidencia 2: se modificó la prueba existente
+
+Después de corregir la sintaxis, se sustituyó la entrada de la primera prueba por `18.5` y la expectativa por `S/ 18.50`, pero se mantuvo un solo bloque `it`. Vitest ejecutó correctamente una prueba, no dos.
+
+Aprendizaje: cambiar los datos de un bloque `it` modifica un caso existente; para añadir otro caso se necesita un segundo bloque `it`.
+
+También se detectó que el título decía “número entero” mientras la entrada era decimal. Una prueba puede pasar técnicamente y aun así estar descrita incorrectamente.
+
+#### Resultado final
+
+```text
+✓ tests/utils.test.js (2 tests) 4ms
+  ✓ formatCurrency (2)
+    ✓ formatea un número entero con dos decimales 2ms
+    ✓ formatea un decimal agregando el cero faltante 0ms
+
+Test Files  1 passed (1)
+Tests       2 passed (2)
+Duration    207ms
+```
+
+#### Pruebas registradas
+
+| ID | Entrada | Resultado esperado | Resultado obtenido | Estado |
+|---|---:|---|---|---|
+| PU-UTIL-001 | `15` | `S/ 15.00` | `S/ 15.00` | Aprobada |
+| PU-UTIL-002 | `18.5` | `S/ 18.50` | `S/ 18.50` | Aprobada |
+
 ## Formato para documentar cada prueba
 
 Cada prueba añadida se registrará con esta información:
@@ -227,10 +273,11 @@ Cada prueba añadida se registrará con esta información:
 | 02 | 0 | 0 | 0 | Instalar Vitest |
 | 03 | 0 | 0 | 0 | Configurar módulos y scripts |
 | 04 | 2 intentos | 1 | 1 intento de configuración | Diseñar PU-UTIL-002 |
+| 05 | 2 pruebas finales | 2 | 0 | Crear primer commit |
 
 ## Próximo paso
 
-Diseñar y ejecutar una segunda prueba de `formatCurrency` con un número decimal.
+Crear un punto de control en Git con la configuración y las dos primeras pruebas aprobadas.
 
 ## Historial de actualización
 
@@ -238,3 +285,4 @@ Diseñar y ejecutar una segunda prueba de `formatCurrency` con un número decima
 - **2026-11-27:** registro del clon correcto, estado limpio y advertencia sobre el repositorio Git accidental en una carpeta superior.
 - **2026-11-27:** registro de la inicialización de npm, instalación de Vitest 5.1.2 y auditoría con cero vulnerabilidades.
 - **2026-11-27:** registro de PU-UTIL-001, incluyendo el intento fallido por archivo no guardado y su ejecución aprobada.
+- **2026-11-27:** registro de PU-UTIL-002, errores de sintaxis y estructura encontrados, y ejecución final con dos pruebas aprobadas.
