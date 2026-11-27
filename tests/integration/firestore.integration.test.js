@@ -130,6 +130,21 @@ describe('Integración Firestore de roles y flujos críticos', () => {
     }));
   });
 
+  it('administración cierra la devolución en el pedido sin poder alterar la venta', async () => {
+    await sembrarBase();
+    await entorno.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'pedidos', 'pedido-dev-001'), {
+        estadoGeneral: 'Entregado', total: 15, estadoDevolucion: 'Solicitada'
+      });
+    });
+
+    const adminDb = contexto('admin-uid', 'admin@empresa.pe').firestore();
+    await assertSucceeds(updateDoc(doc(adminDb, 'pedidos', 'pedido-dev-001'), {
+      estadoDevolucion: 'Procesada', notaCreditoNumero: 'BC01-00000001'
+    }));
+    await assertFails(updateDoc(doc(adminDb, 'pedidos', 'pedido-dev-001'), { total: 0 }));
+  });
+
   it('solo administración modifica cuentas operativas', async () => {
     await sembrarBase();
     const adminDb = contexto('admin-uid', 'admin@empresa.pe').firestore();

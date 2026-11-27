@@ -39,6 +39,8 @@ service cloud.firestore {
       allow read: if signedIn();
       allow create: if cajera();
       allow update: if cajera()
+        || (admin() && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['estadoDevolucion', 'notaCreditoNumero']))
         || (cocina() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['productos', 'estadoGeneral', 'fechaTomado']));
       allow delete: if false;
     }

@@ -403,7 +403,9 @@ export async function procesarDevolucion(devolucionId, { comprobanteArchivo, com
     // Modalidad efectiva real con la que se hizo el reembolso
     const modalidadEfectiva = modalidadReal || devolucion.modalidad || 'Transferencia';
 
-    // Obtener información del pedido original para la Nota de Crédito
+    // Obtener el comprobante fiscal que se modificará con la Nota de Crédito.
+    // Si el reclamo proviene de una reposición, el documento válido es la venta
+    // raíz: una reposición sin costo no constituye una segunda venta.
     let pedidoOriginal = null;
     let tipoComprobanteModificado = 'Boleta';
     let comprobanteModificadoNumero = devolucion.pedidoCodigo || 'S/N';
@@ -411,9 +413,10 @@ export async function procesarDevolucion(devolucionId, { comprobanteArchivo, com
     let datosCliente = null;
     let datosEmisor = null;
 
-    if (devolucion.pedidoId) {
+    const pedidoFiscalId = devolucion.pedidoOrigenId || devolucion.pedidoId;
+    if (pedidoFiscalId) {
         try {
-            pedidoOriginal = await getPedidoById(devolucion.pedidoId);
+            pedidoOriginal = await getPedidoById(pedidoFiscalId);
             tipoComprobanteModificado = pedidoOriginal.tipoComprobante === 'Factura' ? 'Factura' : 'Boleta';
             comprobanteModificadoNumero = pedidoOriginal.comprobante || pedidoOriginal.codigo || 'S/N';
             fechaComprobanteModificado = pedidoOriginal.fechaRegistro || null;
