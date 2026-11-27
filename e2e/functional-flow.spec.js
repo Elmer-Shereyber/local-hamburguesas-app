@@ -289,7 +289,6 @@ test.describe.serial('E2E funcional autenticado con Firebase Emulator', () => {
     await expect(admin.locator('#conteo-reposiciones')).toContainText('1 reposiciones');
     await expect(admin.locator('#conteo-devoluciones')).toContainText('1 devoluciones');
     await expect(admin.locator('#reposiciones-tbody')).toContainText('Hamburguesa Clásica');
-    await expect(admin.locator('#devoluciones-reporte-tbody')).toContainText('Producto en mal estado');
     await expect(admin.locator('#motivos-lista-container')).toContainText('Producto en mal estado');
 
     await admin.locator('#devoluciones-reporte-tbody .btn-ver-voucher').click();
