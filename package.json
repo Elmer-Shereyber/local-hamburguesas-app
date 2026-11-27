@@ -9,7 +9,7 @@
     "test:coverage": "vitest run --coverage",
     "test:integration": "npx --yes firebase-tools@15.37.0 emulators:exec --only auth,firestore --project demo-burger-local \"vitest run --config vitest.integration.config.js\"",
     "test:e2e:install": "playwright install chromium",
-    "test:e2e": "playwright test",
+    "test:e2e": "npx --yes firebase-tools@15.37.0 emulators:exec --only auth,firestore --project demo-burger-local \"playwright test\"",
     "test:all": "npm run test:run && npm run test:integration && npm run test:e2e"
   },
   "repository": {
