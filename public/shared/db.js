@@ -1,12 +1,12 @@
-import { db, firebaseConfig } from './firebase-config.js';
+import { db, firebaseConfig, usingFirebaseEmulators } from './firebase-config.js';
 import { normalizarTipo } from './utils.js';
 import { 
     collection, getDocs, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc,
     query, where, orderBy, onSnapshot, serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+import { deleteApp, initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
 import { 
-    getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, updatePassword, deleteUser, signOut 
+    connectAuthEmulator, getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, deleteUser, signOut
 } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
 
 // Referencias a colecciones
@@ -15,6 +15,15 @@ const pedidosCol = collection(db, 'pedidos');
 const devolucionesCol = collection(db, 'devoluciones');
 const usuariosCol = collection(db, 'usuarios');
 const configDoc = doc(db, 'configuracion', 'negocio');
+
+function crearAuthSecundaria(prefijo) {
+    const secondaryApp = initializeApp(firebaseConfig, `${prefijo}_${Date.now()}_${Math.random()}`);
+    const secondaryAuth = getAuth(secondaryApp);
+    if (usingFirebaseEmulators) {
+        connectAuthEmulator(secondaryAuth, 'http://127.0.0.1:9099', { disableWarnings: true });
+    }
+    return { secondaryApp, secondaryAuth };
+}
 
 // ---------------------- PRODUCTOS ----------------------
 
@@ -642,35 +651,18 @@ export async function crearCuentaOperativa({ rol, usuario, password }) {
     const emailInterno = `${usuarioLimpio.toLowerCase()}@burger.local`;
 
     // Registrar en Firebase Authentication usando instancia secundaria (para no cerrar la sesión del admin)
+    const { secondaryApp, secondaryAuth } = crearAuthSecundaria('SecondaryAuthCreation');
     try {
-        const secondaryApp = initializeApp(firebaseConfig, "SecondaryAuthCreation_" + Date.now());
-        const secondaryAuth = getAuth(secondaryApp);
-
-        try {
-            await createUserWithEmailAndPassword(secondaryAuth, emailInterno, passwordLimpia);
-            await signOut(secondaryAuth);
-        } catch (authErr) {
-            if (authErr.code === 'auth/email-already-in-use') {
-                // Si la credencial ya existía en Auth (por ejemplo de un seed previo),
-                // actualizamos su contraseña iniciando sesión con la password o con el seed
-                try {
-                    const cred = await signInWithEmailAndPassword(secondaryAuth, emailInterno, passwordLimpia);
-                    await signOut(secondaryAuth);
-                } catch (loginErr) {
-                    try {
-                        const credSeed = await signInWithEmailAndPassword(secondaryAuth, emailInterno, '123456');
-                        await updatePassword(credSeed.user, passwordLimpia);
-                        await signOut(secondaryAuth);
-                    } catch (seedErr) {
-                        console.warn("Usuario ya existía en Auth:", authErr.message);
-                    }
-                }
-            } else {
-                throw authErr;
-            }
-        }
+        await createUserWithEmailAndPassword(secondaryAuth, emailInterno, passwordLimpia);
+        await signOut(secondaryAuth);
     } catch (e) {
-        console.error("Nota sobre aprovisionamiento en Firebase Auth:", e);
+        if (e.code === 'auth/email-already-in-use') {
+            throw new Error(`Ya existe una credencial de acceso para "${usuarioLimpio}".`);
+        }
+        throw new Error("No se pudo crear la credencial de acceso en Firebase Authentication.");
+    } finally {
+        await signOut(secondaryAuth).catch(() => {});
+        await deleteApp(secondaryApp).catch(() => {});
     }
 
     // Guardar en Firestore en la colección 'usuarios' con ID = rol (máximo 1 cuenta por rol)
@@ -679,7 +671,6 @@ export async function crearCuentaOperativa({ rol, usuario, password }) {
         usuario: usuarioLimpio,
         usuarioLower: usuarioLimpio.toLowerCase(),
         email: emailInterno,
-        password: passwordLimpia,
         fechaCreacion: serverTimestamp(),
         activo: true
     };
@@ -695,7 +686,7 @@ export async function crearCuentaOperativa({ rol, usuario, password }) {
  * • El rol queda inmediatamente disponible para crear una cuenta nueva (CA06).
  * • Los pedidos e incidencias previas conservan intacto su historial de operaciones (CA08).
  */
-export async function eliminarCuentaOperativa(rol) {
+export async function eliminarCuentaOperativa(rol, passwordActual) {
     const rolNorm = (rol || '').toLowerCase().trim();
     if (rolNorm !== 'cajera' && rolNorm !== 'cocina') {
         throw new Error("El rol especificado para eliminar no es válido.");
@@ -705,32 +696,21 @@ export async function eliminarCuentaOperativa(rol) {
     const snap = await getDoc(docRolRef);
     const datosUsuario = snap.exists() ? snap.data() : null;
 
-    // 1. Eliminar permanentemente la cuenta de Firebase Authentication
-    if (datosUsuario && datosUsuario.email) {
-        try {
-            const secondaryApp = initializeApp(firebaseConfig, "SecondaryAuthDeletion_" + Date.now());
-            const secondaryAuth = getAuth(secondaryApp);
-            
-            const pwd = datosUsuario.password || '123456';
-            try {
-                const cred = await signInWithEmailAndPassword(secondaryAuth, datosUsuario.email, pwd);
-                await deleteUser(cred.user);
-            } catch (loginErr) {
-                // Si la contraseña no coincidía, intentamos con '123456'
-                if (pwd !== '123456') {
-                    try {
-                        const credSeed = await signInWithEmailAndPassword(secondaryAuth, datosUsuario.email, '123456');
-                        await deleteUser(credSeed.user);
-                    } catch (seedErr) {
-                        console.warn("No se pudo iniciar sesión para eliminar en Auth:", seedErr.message);
-                    }
-                }
-            } finally {
-                await signOut(secondaryAuth).catch(() => {});
-            }
-        } catch (authErr) {
-            console.error("Nota sobre eliminación en Firebase Auth:", authErr);
-        }
+    const passwordLimpia = (passwordActual || '').trim();
+    if (!datosUsuario?.email) throw new Error("La cuenta operativa no existe.");
+    if (passwordLimpia.length < 6) throw new Error("Ingrese la contraseña actual de la cuenta para confirmar la eliminación.");
+
+    // 1. Validar la credencial de forma transitoria y eliminarla de Authentication.
+    // La contraseña nunca se guarda en Firestore.
+    const { secondaryApp, secondaryAuth } = crearAuthSecundaria('SecondaryAuthDeletion');
+    try {
+        const cred = await signInWithEmailAndPassword(secondaryAuth, datosUsuario.email, passwordLimpia);
+        await deleteUser(cred.user);
+    } catch (authErr) {
+        throw new Error("La contraseña de la cuenta operativa no es correcta.");
+    } finally {
+        await signOut(secondaryAuth).catch(() => {});
+        await deleteApp(secondaryApp).catch(() => {});
     }
 
     // 2. Eliminar el documento activo en Firestore

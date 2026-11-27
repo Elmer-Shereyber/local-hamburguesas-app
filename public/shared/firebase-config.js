@@ -3,6 +3,7 @@ import { connectFirestoreEmulator, getFirestore } from "https://www.gstatic.com/
 import { connectAuthEmulator, getAuth } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
 
 const hostLocal = ['127.0.0.1', 'localhost'].includes(window.location.hostname);
+export const usingFirebaseEmulators = hostLocal;
 
 // Configuración de Firebase proporcionada
 export const firebaseConfig = hostLocal

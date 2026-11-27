@@ -545,7 +545,14 @@ Running 20 tests using 2 workers
 20 passed (12.6s)
 ```
 
-El acumulado certificado quedó en **241 pruebas aprobadas y 0 fallidas**: 206 de Vitest, 15 de integración Firebase y 20 E2E con Playwright.
+Posteriormente se añadieron dos recorridos: gestión del catálogo con disponibilidad propagada entre administración, cocina y caja; y reconciliación del reporte diario con ventas, devoluciones, neto, incidencias y voucher. Ambos fueron certificados en Chromium sobre Windows:
+
+```text
+Running 22 tests using 2 workers
+22 passed (19.6s)
+```
+
+El acumulado certificado quedó en **243 pruebas aprobadas y 0 fallidas**: 206 de Vitest, 15 de integración Firebase y 22 E2E con Playwright.
 
 ## Formato para documentar cada prueba
 
@@ -581,6 +588,7 @@ Cada prueba añadida se registrará con esta información:
 | 12 | 14 | 14 | 0 | Ejecutar E2E en Chromium |
 | 13 | 18 E2E | 18 | 0 | Corregir selector funcional de reposición |
 | 14 | 15 integración + 20 E2E | 35 | 0 | Ampliar los recorridos de las HU restantes |
+| 15 | 22 E2E | 22 | 0 | Corregir y verificar gestión segura de usuarios |
 
 ## Próximo paso recomendado
 
@@ -606,3 +614,4 @@ Continuar los recorridos funcionales de las HU aún no ejercitadas en navegador,
 - **2026-11-27:** 14 E2E aprobadas en Chromium sobre Windows; corregido el desborde móvil de Reportes y acumulado elevado a 234 pruebas aprobadas.
 - **2026-11-27:** 15 integraciones aprobadas; se restringió el cierre administrativo del pedido a los campos de devolución y nota de crédito.
 - **2026-11-27:** 20 E2E aprobadas en Chromium sobre Windows, incluidos pedido, cocina, reposición, devolución, voucher y nota de crédito; acumulado elevado a 241 pruebas.
+- **2026-11-27:** 22 E2E aprobadas; catálogo, disponibilidad en tiempo real y reportes administrativos elevaron el acumulado a 243 pruebas.

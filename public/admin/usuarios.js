@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnConfirmarEliminar = document.getElementById('btn-confirmar-eliminar');
     const eliminarRolTxt = document.getElementById('eliminar-rol-txt');
     const eliminarUsuarioTxt = document.getElementById('eliminar-usuario-txt');
+    const eliminarPassword = document.getElementById('eliminar-password');
 
     // Estado local
     let cuentasActuales = [];
@@ -432,6 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         eliminarRolTxt.textContent = rol === 'cajera' ? 'Cajera' : 'Cocina';
         eliminarUsuarioTxt.textContent = `@${usuario}`;
+        eliminarPassword.value = '';
 
         modalEliminar.style.display = 'flex';
     }
@@ -452,14 +454,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const rolNom = rolAEliminar === 'cajera' ? 'Cajera' : 'Cocina';
             const usuarioNom = cuentaAEliminar;
 
-            await eliminarCuentaOperativa(rolAEliminar);
+            await eliminarCuentaOperativa(rolAEliminar, eliminarPassword.value);
 
             showAlert(`🗑️ Cuenta de ${rolNom} (@${usuarioNom}) eliminada.\n\n• El rol ha quedado inmediatamente libre para crear una nueva cuenta.\n• Si el personal tenía una sesión abierta, será cerrada en su próxima acción.\n• Los pedidos e incidencias previas se conservan intactos en el historial.`);
             modalEliminar.style.display = 'none';
 
         } catch (error) {
             console.error("Error al eliminar cuenta operativa:", error);
-            showAlert("Ocurrió un error al eliminar la cuenta operativa.");
+            showAlert(error.message || "Ocurrió un error al eliminar la cuenta operativa.");
         } finally {
             btnConfirmarEliminar.disabled = false;
             btnConfirmarEliminar.textContent = 'Sí, Eliminar Cuenta';

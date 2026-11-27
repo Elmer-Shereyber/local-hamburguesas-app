@@ -299,4 +299,56 @@ test.describe.serial('E2E funcional autenticado con Firebase Emulator', () => {
 
     await adminContext.close();
   });
+
+  test('usuarios operativos: elimina con cierre forzado y crea una cuenta sin guardar contraseña', async ({ browser }) => {
+    const adminContext = await browser.newContext();
+    const cajeraContext = await browser.newContext();
+    const admin = await adminContext.newPage();
+    const cajera = await cajeraContext.newPage();
+
+    await iniciarSesion(cajera, 'cajera01', 'Cajera123!', '/cajera/registrar-pedido.html');
+    await iniciarSesion(admin, 'admin@empresa.pe', 'Admin123!', '/admin/index.html');
+    await admin.goto('/admin/usuarios.html');
+    await expect(admin.locator('#stat-activas')).toHaveText('2 / 2', { timeout: 20000 });
+
+    await admin.locator('#acciones-cajera .btn-abrir-eliminar').click();
+    await expect(admin.locator('#eliminar-usuario-txt')).toHaveText('@cajera01');
+    await admin.locator('#eliminar-password').fill('Cajera123!');
+    cajera.once('dialog', (dialog) => dialog.accept());
+    admin.once('dialog', (dialog) => dialog.accept());
+    await admin.locator('#btn-confirmar-eliminar').click();
+
+    await expect(admin.locator('#stat-activas')).toHaveText('1 / 2', { timeout: 20000 });
+    await expect(cajera).toHaveURL(/\/login\/index\.html$/, { timeout: 20000 });
+    await cajera.locator('#identifier').fill('cajera01');
+    await cajera.locator('#password').fill('Cajera123!');
+    await cajera.locator('#login-form [type="submit"]').click();
+    await expect(cajera.locator('#error-msg')).toHaveText('Credenciales inválidas.');
+
+    await admin.locator('#acciones-cajera .btn-crear-rol-directo').click();
+    await admin.locator('#crear-usuario-nombre').fill('cajerae2e');
+    await admin.locator('#crear-usuario-password').fill('CajaE2E123!');
+    await expect(admin.locator('#hint-usuario-status')).toContainText('disponible', { timeout: 20000 });
+    await expect(admin.locator('#btn-confirmar-crear')).toBeEnabled();
+    admin.once('dialog', (dialog) => dialog.accept());
+    await admin.locator('#btn-confirmar-crear').click();
+
+    await expect(admin.locator('#stat-activas')).toHaveText('2 / 2', { timeout: 20000 });
+    await expect(admin.locator('#usuarios-tbody')).toContainText('@cajerae2e');
+    const documento = await admin.request.get(
+      'http://127.0.0.1:8085/v1/projects/demo-burger-local/databases/(default)/documents/usuarios/cajera'
+    );
+    expect(documento.ok()).toBe(true);
+    const datosDocumento = await documento.json();
+    expect(datosDocumento.fields).not.toHaveProperty('password');
+
+    await iniciarSesion(cajera, 'cajerae2e', 'CajaE2E123!', '/cajera/registrar-pedido.html');
+    await expect(cajera.locator('#current-user')).toHaveText('cajerae2e');
+
+    await admin.goto('/admin/reportes.html');
+    await expect(admin.locator('#lista-pedidos-incidencias')).toContainText('B001-000001', { timeout: 20000 });
+
+    await adminContext.close();
+    await cajeraContext.close();
+  });
 });

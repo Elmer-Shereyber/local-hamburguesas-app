@@ -35,9 +35,9 @@ Después de la fase unitaria se añadieron los niveles que faltaban:
 | Firestore Emulator: permisos, CRUD y tiempo real | `firestore.integration.test.js` | 10 | 10 aprobadas |
 | Authentication Emulator: acceso, error, logout y recuperación | `auth.integration.test.js` | 5 | 5 aprobadas |
 | Navegador real: rutas y adaptación 375/768/1440 px | `e2e/static-pages.spec.js` | 14 | 14 aprobadas en Chromium sobre Windows |
-| Navegador real autenticado: acceso, pedido, cocina e incidencias | `e2e/functional-flow.spec.js` | 6 | 6 aprobadas en Chromium sobre Windows |
+| Navegador real autenticado: acceso, pedido, cocina, incidencias, catálogo y reportes | `e2e/functional-flow.spec.js` | 8 | 8 aprobadas en Chromium sobre Windows |
 
-Total ejecutado y aprobado: **241 pruebas** (206 de Vitest, 15 de Firebase Emulator y 20 E2E con Playwright). Las E2E fueron certificadas el 27 de noviembre de 2026 en Chromium sobre Windows. Además de rutas y adaptación visual, ya se comprueban autenticación, permisos de navegación, pedido, comprobante, cocina, reposición, devolución, voucher y nota de crédito.
+Total ejecutado y aprobado: **243 pruebas** (206 de Vitest, 15 de Firebase Emulator y 22 E2E con Playwright). Las E2E fueron certificadas el 27 de noviembre de 2026 en Chromium sobre Windows. Además de rutas y adaptación visual, ya se comprueban autenticación, permisos de navegación, pedido, comprobante, cocina, reposición, devolución, voucher, nota de crédito, catálogo, disponibilidad en tiempo real y reportes.
 
 Comandos:
 
@@ -105,4 +105,4 @@ Las pruebas generadas con `it.each` cuentan una vez por cada dato de la tabla; p
 
 ## Interpretación correcta del resultado
 
-La ejecución verde demuestra las reglas aisladas, los contratos DOM, 15 integraciones con Firebase Emulator y 20 verificaciones en Chromium, incluidas seis funcionales autenticadas. Todavía no demuestra por sí sola que el proyecto Firebase real, el proveedor externo o varios dispositivos funcionen juntos. Para afirmar que cada HU está completamente aceptada se deben completar los recorridos funcionales indicados en los pendientes.
+La ejecución verde demuestra las reglas aisladas, los contratos DOM, 15 integraciones con Firebase Emulator y 22 verificaciones en Chromium, incluidas ocho funcionales autenticadas. Todavía no demuestra por sí sola que el proyecto Firebase real, el proveedor externo o varios dispositivos funcionen juntos. Para afirmar que cada HU está completamente aceptada se deben completar los recorridos funcionales indicados en los pendientes.
