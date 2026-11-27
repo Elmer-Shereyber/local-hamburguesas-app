@@ -1,0 +1,24 @@
+{
+  "name": "local-hamburguesas-app-pruebas",
+  "version": "1.0.0",
+  "description": "Sistema web integral desarrollado para la atención en punto de venta, control de preparación en cocina en tiempo real, gestión de incidencias posventa (reposiciones y reembolsos) y supervisión administrativa con emisión de comprobantes electrónicos (Boletas, Facturas y Notas de Crédito bajo normativa SUNAT).",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KohakuAzureFire/local-hamburguesas-app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/KohakuAzureFire/local-hamburguesas-app/issues"
+  },
+  "homepage": "https://github.com/KohakuAzureFire/local-hamburguesas-app#readme",
+  "devDependencies": {
+    "vitest": "^5.1.2"
+  }
+}
