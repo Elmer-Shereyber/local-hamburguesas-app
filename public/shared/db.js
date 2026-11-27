@@ -2,7 +2,7 @@ import { db, firebaseConfig, usingFirebaseEmulators } from './firebase-config.js
 import { normalizarTipo } from './utils.js';
 import { 
     collection, getDocs, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc,
-    query, where, orderBy, onSnapshot, serverTimestamp 
+    query, where, orderBy, onSnapshot, serverTimestamp, runTransaction, writeBatch
 } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 import { deleteApp, initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
 import { 
@@ -119,11 +119,14 @@ export async function getConfiguracion() {
 }
 
 export async function incrementCorrelativo(tipo) {
-    const config = await getConfiguracion();
     const campo = tipo === 'Factura' ? 'correlativoFactura' : 'correlativoBoleta';
-    const nuevoValor = (config[campo] || 0) + 1;
-    await updateDoc(configDoc, { [campo]: nuevoValor });
-    return nuevoValor;
+    return runTransaction(db, async (transaccion) => {
+        const snap = await transaccion.get(configDoc);
+        if (!snap.exists()) throw new Error("No se encontró la configuración del negocio.");
+        const nuevoValor = (snap.data()[campo] || 0) + 1;
+        transaccion.update(configDoc, { [campo]: nuevoValor });
+        return nuevoValor;
+    });
 }
 
 /**
@@ -132,14 +135,20 @@ export async function incrementCorrelativo(tipo) {
  * Boleta -> BC01-XXXXXXXX
  */
 export async function incrementCorrelativoNotaCredito(tipoComprobanteModificado) {
-    const config = await getConfiguracion();
     const esFactura = tipoComprobanteModificado === 'Factura';
     const campo = esFactura ? 'correlativoNotaCreditoFactura' : 'correlativoNotaCreditoBoleta';
-    const nuevoValor = (config[campo] || 0) + 1;
-    await updateDoc(configDoc, { [campo]: nuevoValor });
     const serie = esFactura ? 'FC01' : 'BC01';
-    const numeroFormateado = `${serie}-${String(nuevoValor).padStart(8, '0')}`;
-    return { numero: nuevoValor, serie, numeroFormateado };
+    return runTransaction(db, async (transaccion) => {
+        const snap = await transaccion.get(configDoc);
+        if (!snap.exists()) throw new Error("No se encontró la configuración del negocio.");
+        const nuevoValor = (snap.data()[campo] || 0) + 1;
+        transaccion.update(configDoc, { [campo]: nuevoValor });
+        return {
+            numero: nuevoValor,
+            serie,
+            numeroFormateado: `${serie}-${String(nuevoValor).padStart(8, '0')}`
+        };
+    });
 }
 
 // ---------------------- PEDIDOS ----------------------
@@ -283,28 +292,30 @@ export async function registrarReposicion({ pedidoOriginal, productosReemplazo, 
         fechaRegistro: serverTimestamp()
     };
 
-    const repoDocRef = await addDoc(pedidosCol, nuevoPedido);
-
-    // 2. Actualizar el pedido original: marcar como 'Con reposición' e incrementar unidadesRepuestas
+    const repoDocRef = doc(pedidosCol);
     const pOriginalDoc = doc(db, 'pedidos', pedidoOriginal.id);
-    const productosActualizados = pedidoOriginal.productos.map(prod => {
-        const afectado = productosOriginalesAfectados.find(a => a.id === prod.id);
-        if (afectado) {
-            return {
+    await runTransaction(db, async (transaccion) => {
+        const originalSnap = await transaccion.get(pOriginalDoc);
+        if (!originalSnap.exists()) throw new Error("El pedido original ya no existe.");
+        const originalActual = originalSnap.data();
+        if (originalActual.tieneReposicion || originalActual.tieneDevolucion) {
+            throw new Error("El pedido ya tiene una incidencia registrada.");
+        }
+
+        const productosActualizados = (originalActual.productos || []).map(prod => {
+            const afectado = productosOriginalesAfectados.find(a => a.id === prod.id);
+            return afectado ? {
                 ...prod,
                 unidadesRepuestas: (prod.unidadesRepuestas || 0) + afectado.cantidad
-            };
-        }
-        return prod;
-    });
+            } : prod;
+        });
 
-    const reposicionesList = pedidoOriginal.reposicionesIds || [];
-    reposicionesList.push(repoDocRef.id);
-
-    await updateDoc(pOriginalDoc, {
-        tieneReposicion: true,
-        productos: productosActualizados,
-        reposicionesIds: reposicionesList
+        transaccion.set(repoDocRef, nuevoPedido);
+        transaccion.update(pOriginalDoc, {
+            tieneReposicion: true,
+            productos: productosActualizados,
+            reposicionesIds: [...(originalActual.reposicionesIds || []), repoDocRef.id]
+        });
     });
 
     return repoDocRef.id;
@@ -332,43 +343,43 @@ export async function solicitarDevolucion({ pedidoOriginal, productosAfectados, 
         fechaSolicitud: serverTimestamp()
     };
 
-    const devDocRef = await addDoc(devolucionesCol, nuevaSolicitud);
-
-    // 2. Actualizar el pedido activo: marcar como 'Devolución solicitada' e incrementar unidadesDevueltas
+    const devDocRef = doc(devolucionesCol);
     const pOriginalDoc = doc(db, 'pedidos', pedidoOriginal.id);
-    const productosActualizados = (pedidoOriginal.productos || []).map(prod => {
-        const afectado = productosAfectados.find(a => a.id === prod.id);
-        if (afectado) {
-            return {
+    const pOrigenDoc = pedidoOriginal.esReposicion && pedidoOriginal.pedidoOrigenId
+        ? doc(db, 'pedidos', pedidoOriginal.pedidoOrigenId)
+        : null;
+
+    await runTransaction(db, async (transaccion) => {
+        const pedidoSnap = await transaccion.get(pOriginalDoc);
+        if (!pedidoSnap.exists()) throw new Error("El pedido asociado ya no existe.");
+        const pedidoActual = pedidoSnap.data();
+        if (pOrigenDoc) {
+            const origenSnap = await transaccion.get(pOrigenDoc);
+            if (!origenSnap.exists()) throw new Error("El pedido raíz ya no existe.");
+        }
+
+        const productosActualizados = (pedidoActual.productos || []).map(prod => {
+            const afectado = productosAfectados.find(a => a.id === prod.id);
+            return afectado ? {
                 ...prod,
                 unidadesDevueltas: (prod.unidadesDevueltas || 0) + afectado.cantidad
-            };
-        }
-        return prod;
-    });
+            } : prod;
+        });
 
-    const devolucionesList = pedidoOriginal.devolucionesIds || [];
-    devolucionesList.push(devDocRef.id);
-
-    await updateDoc(pOriginalDoc, {
-        tieneDevolucion: true,
-        estadoDevolucion: 'Solicitada',
-        productos: productosActualizados,
-        devolucionesIds: devolucionesList
-    });
-
-    // 3. Si era una devolución sobre una reposición, cerrar el caso también en el pedido original raíz
-    if (pedidoOriginal.esReposicion && pedidoOriginal.pedidoOrigenId) {
-        try {
-            const pOrigenDoc = doc(db, 'pedidos', pedidoOriginal.pedidoOrigenId);
-            await updateDoc(pOrigenDoc, {
+        transaccion.set(devDocRef, nuevaSolicitud);
+        transaccion.update(pOriginalDoc, {
+            tieneDevolucion: true,
+            estadoDevolucion: 'Solicitada',
+            productos: productosActualizados,
+            devolucionesIds: [...(pedidoActual.devolucionesIds || []), devDocRef.id]
+        });
+        if (pOrigenDoc) {
+            transaccion.update(pOrigenDoc, {
                 tieneDevolucion: true,
                 estadoDevolucion: 'Solicitada'
             });
-        } catch (e) {
-            console.warn("No se pudo actualizar pedido origen:", e);
         }
-    }
+    });
 
     return devDocRef.id;
 }
@@ -469,8 +480,9 @@ export async function procesarDevolucion(devolucionId, { comprobanteArchivo, com
     const codigoTipoNotaCredito = esDevolucionTotal ? '06' : '07';
     const descripcionTipoNotaCredito = esDevolucionTotal ? '06 - DEVOLUCIÓN TOTAL' : '07 - DEVOLUCIÓN POR ÍTEM';
 
-    // 1. Actualizar la solicitud en la colección 'devoluciones'
-    await updateDoc(devDoc, {
+    // La solicitud y los pedidos asociados se cierran en un único lote.
+    const lote = writeBatch(db);
+    lote.update(devDoc, {
         estado: 'Procesada',
         fechaProcesado: serverTimestamp(),
         comprobanteArchivo: comprobanteArchivo || null,
@@ -500,31 +512,23 @@ export async function procesarDevolucion(devolucionId, { comprobanteArchivo, com
         itemsDevueltos: devolucion.productos || []
     });
 
-    // 2. Actualizar el pedido directo asociado en 'pedidos'
     if (devolucion.pedidoId) {
-        try {
-            const pDoc = doc(db, 'pedidos', devolucion.pedidoId);
-            await updateDoc(pDoc, {
-                estadoDevolucion: 'Procesada',
-                notaCreditoNumero: numeroNotaCredito
-            });
-        } catch (e) {
-            console.warn("No se pudo actualizar estadoDevolucion en pedido:", e);
-        }
+        const pDoc = doc(db, 'pedidos', devolucion.pedidoId);
+        lote.update(pDoc, {
+            estadoDevolucion: 'Procesada',
+            notaCreditoNumero: numeroNotaCredito
+        });
     }
 
-    // 3. Si era una devolución sobre reposición, actualizar también el pedido origen raíz
     if (devolucion.pedidoOrigenId) {
-        try {
-            const pOrigenDoc = doc(db, 'pedidos', devolucion.pedidoOrigenId);
-            await updateDoc(pOrigenDoc, {
-                estadoDevolucion: 'Procesada',
-                notaCreditoNumero: numeroNotaCredito
-            });
-        } catch (e) {
-            console.warn("No se pudo actualizar estadoDevolucion en pedido origen:", e);
-        }
+        const pOrigenDoc = doc(db, 'pedidos', devolucion.pedidoOrigenId);
+        lote.update(pOrigenDoc, {
+            estadoDevolucion: 'Procesada',
+            notaCreditoNumero: numeroNotaCredito
+        });
     }
+
+    await lote.commit();
 
     return { devolucionId, numeroNotaCredito };
 }

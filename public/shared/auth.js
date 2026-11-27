@@ -5,11 +5,12 @@ import {
     onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
 import { 
-    doc, getDoc, getDocs, collection, query, where, onSnapshot 
+    doc, getDoc, getDocs, setDoc, deleteDoc, collection, query, where, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
 // Dominio interno para cajera y cocina (HU-10 CA05, HU-13 CA03)
 export const INTERNAL_DOMAIN = '@burger.local';
+let cierreEnCurso = false;
 
 /**
  * Determina el rol del usuario basado en su email y sesión activa
@@ -87,6 +88,15 @@ export async function login(identifier, password) {
         }
     }
 
+    // CA09: una sola sesión activa por cuenta. Un nuevo acceso reemplaza el
+    // token registrado y el listener del dispositivo anterior lo desconecta.
+    const tokenSesion = crypto.randomUUID();
+    await setDoc(doc(db, 'sesiones', userCredential.user.uid), {
+        token: tokenSesion,
+        email: userCredential.user.email,
+        actualizadoEn: Date.now()
+    });
+    sessionStorage.setItem('sessionToken', tokenSesion);
     sessionStorage.setItem('currentUserRole', role);
     sessionStorage.setItem('currentUsername', usuarioLimpio || identifier.split('@')[0]);
     return { user: userCredential.user, role };
@@ -97,6 +107,16 @@ export async function login(identifier, password) {
  */
 export async function logout() {
     try {
+        cierreEnCurso = true;
+        const user = auth.currentUser;
+        const tokenLocal = sessionStorage.getItem('sessionToken');
+        if (user && tokenLocal) {
+            const sesionRef = doc(db, 'sesiones', user.uid);
+            const sesionSnap = await getDoc(sesionRef).catch(() => null);
+            if (sesionSnap?.exists() && sesionSnap.data().token === tokenLocal) {
+                await deleteDoc(sesionRef).catch(() => {});
+            }
+        }
         sessionStorage.clear();
         await signOut(auth);
         window.location.href = '../login/index.html';
@@ -119,7 +139,36 @@ export function requireAuth(allowedRole) {
             return;
         }
 
+        // Fuerza la renovación para detectar contraseñas restablecidas o
+        // credenciales revocadas antes de permitir una pantalla protegida.
+        try {
+            await user.getIdToken(true);
+        } catch {
+            sessionStorage.clear();
+            await signOut(auth).catch(() => {});
+            window.location.href = '../login/index.html';
+            return;
+        }
+
         let currentRole = getUserRole(user.email);
+        const tokenLocal = sessionStorage.getItem('sessionToken');
+        const sesionRef = doc(db, 'sesiones', user.uid);
+
+        if (!tokenLocal) {
+            sessionStorage.clear();
+            await signOut(auth);
+            window.location.href = '../login/index.html';
+            return;
+        }
+
+        onSnapshot(sesionRef, async (snap) => {
+            if (!cierreEnCurso && (!snap.exists() || snap.data().token !== tokenLocal)) {
+                sessionStorage.clear();
+                await signOut(auth).catch(() => {});
+                alert("Se inició sesión con esta cuenta en otro dispositivo. Esta sesión ha finalizado.");
+                window.location.href = '../login/index.html';
+            }
+        });
         
         // Si no se dedujo el rol de inmediato pero es dominio interno, resolver desde Firestore
         if (user.email.toLowerCase().endsWith(INTERNAL_DOMAIN) && (!currentRole || currentRole === 'admin')) {

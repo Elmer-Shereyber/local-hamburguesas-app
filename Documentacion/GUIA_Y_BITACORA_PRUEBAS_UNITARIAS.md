@@ -552,7 +552,37 @@ Running 22 tests using 2 workers
 22 passed (19.6s)
 ```
 
-El acumulado certificado quedó en **243 pruebas aprobadas y 0 fallidas**: 206 de Vitest, 15 de integración Firebase y 22 E2E con Playwright.
+Después se certificó también el recorrido seguro de usuarios operativos. El acumulado previo a este paquete quedó en **244 pruebas aprobadas y 0 fallidas**: 206 de Vitest, 15 de integración Firebase y 23 E2E con Playwright.
+
+### Sesión 16 — Paquete final de criterios y casos límite
+
+**Fecha:** 27 de noviembre de 2026
+
+Se preparó en un único bloque la automatización restante que puede ejecutarse de forma confiable con Auth/Firestore Emulator:
+
+- sesión única con expulsión en tiempo real del dispositivo anterior;
+- modalidades Efectivo, Yape, Plin, Transferencia e Híbrido;
+- pago híbrido incompleto y suma exacta;
+- boleta con DNI y factura con RUC mediante proveedor simulado;
+- rechazo de empresa inactiva y obligación de DNI sobre S/ 700;
+- devolución parcial, Plin, transferencia bancaria y Nota de Crédito tipo 07;
+- voucher obligatorio y rechazo de PDF mayor a 800 KB;
+- rangos rápidos de reportes y rechazo de fechas invertidas;
+- recuperación completa de contraseña, rechazo de la clave anterior y renovación de sesión;
+- reglas de seguridad para que cada UID administre únicamente su token de sesión.
+
+También se reemplazaron las actualizaciones separadas de correlativos e incidencias por transacciones o lotes de Firestore. Así se evitan correlativos duplicados y estados parcialmente escritos entre devolución, pedido raíz y reposición.
+
+Resultados disponibles antes de la certificación visual final:
+
+```text
+Vitest:               206 passed
+Firebase Emulator:     16 passed
+Playwright:            30 tests reconocidas, ejecución pendiente en Windows
+npm audit:              0 vulnerabilidades
+```
+
+El total previamente certificado se mantiene temporalmente en **244** hasta ejecutar las 30 E2E completas en Chromium sobre Windows. Si todas aprueban, el resultado final será **252 pruebas**: 206 de Vitest, 16 de integración y 30 E2E.
 
 ## Formato para documentar cada prueba
 
@@ -588,11 +618,12 @@ Cada prueba añadida se registrará con esta información:
 | 12 | 14 | 14 | 0 | Ejecutar E2E en Chromium |
 | 13 | 18 E2E | 18 | 0 | Corregir selector funcional de reposición |
 | 14 | 15 integración + 20 E2E | 35 | 0 | Ampliar los recorridos de las HU restantes |
-| 15 | 22 E2E | 22 | 0 | Corregir y verificar gestión segura de usuarios |
+| 15 | 23 E2E | 23 | 0 | Certificar el paquete final de casos límite |
+| 16 | 206 Vitest + 16 integración | 222 | 0 | Certificar 30 E2E finales en Windows |
 
 ## Próximo paso recomendado
 
-Continuar los recorridos funcionales de las HU aún no ejercitadas en navegador, especialmente disponibilidad del catálogo, gestión de productos y usuarios, reportes, sesión única e invalidación posterior al restablecimiento. El voucher PDF ya está cubierto como carga real; la descarga/impresión física sigue requiriendo una verificación específica.
+Ejecutar las tres suites completas en Windows y registrar el resultado final. Después solo quedarán verificaciones que no conviene automatizar en esta suite académica: proveedor DNI/RUC real, impresión física, correo real de recuperación, despliegue de reglas productivas y una prueba de carga concurrente.
 
 ## Historial de actualización
 
@@ -615,3 +646,5 @@ Continuar los recorridos funcionales de las HU aún no ejercitadas en navegador,
 - **2026-11-27:** 15 integraciones aprobadas; se restringió el cierre administrativo del pedido a los campos de devolución y nota de crédito.
 - **2026-11-27:** 20 E2E aprobadas en Chromium sobre Windows, incluidos pedido, cocina, reposición, devolución, voucher y nota de crédito; acumulado elevado a 241 pruebas.
 - **2026-11-27:** 22 E2E aprobadas; catálogo, disponibilidad en tiempo real y reportes administrativos elevaron el acumulado a 243 pruebas.
+- **2026-11-27:** 23 E2E aprobadas; la gestión segura de usuarios operativos elevó el acumulado certificado a 244 pruebas.
+- **2026-11-27:** paquete final preparado con 30 E2E, sesión única, recuperación completa, variantes de pago/comprobante/devolución y escrituras atómicas; certificación visual pendiente.

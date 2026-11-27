@@ -156,6 +156,16 @@ describe('Integración Firestore de roles y flujos críticos', () => {
     await assertFails(updateDoc(doc(cocinaDb, 'usuarios', 'cocina'), { usuario: 'intruso' }));
   });
 
+  it('cada usuario solo puede administrar su propio token de sesión', async () => {
+    await sembrarBase();
+    const cajeraDb = contexto('cajera-uid', 'cajera01@burger.local').firestore();
+    const cocinaDb = contexto('cocina-uid', 'cocina01@burger.local').firestore();
+
+    await assertSucceeds(setDoc(doc(cajeraDb, 'sesiones', 'cajera-uid'), { token: 'sesion-a' }));
+    await assertFails(setDoc(doc(cocinaDb, 'sesiones', 'cajera-uid'), { token: 'intruso' }));
+    await assertFails(getDoc(doc(cocinaDb, 'sesiones', 'cajera-uid')));
+  });
+
   it('propaga en tiempo real un cambio de pedido entre cajera y cocina', async () => {
     await sembrarBase();
     await entorno.withSecurityRulesDisabled(async (ctx) => {
