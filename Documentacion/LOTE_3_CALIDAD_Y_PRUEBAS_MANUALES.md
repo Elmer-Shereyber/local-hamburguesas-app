@@ -18,6 +18,8 @@ Complementar las **252 pruebas funcionales automatizadas ya aprobadas** sin mezc
 
 Las 11 rutas fueron analizadas y la salida visible señaló `color-contrast` como patrón común. La paleta inicial usaba rojo `#EF4444` con texto blanco, relación 3.76:1, por debajo de WCAG AA 4.5:1 para texto normal. Se aplicaron variantes más oscuras a rojo, azul, verde y ámbar, y se programó una segunda ejecución para confirmar el resultado completo.
 
+La segunda ejecución aprobó 10 rutas y detectó solo `select-name` en `#tipo-boleta`. El texto “Tipo de Boleta” se convirtió en una etiqueta explícita asociada al selector. Falta ejecutar nuevamente las 11 pruebas para cerrar accesibilidad.
+
 ## Preparación local
 
 ```powershell
