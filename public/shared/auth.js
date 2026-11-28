@@ -132,6 +132,14 @@ export async function logout() {
  * @param {string|string[]} allowedRole (ej. 'cajera', 'cocina', 'admin')
  */
 export function requireAuth(allowedRole) {
+    // El botón debe responder desde que el DOM invoca requireAuth. Las
+    // validaciones de token y Firestore son asíncronas y no deben retrasar la
+    // posibilidad de cerrar sesión.
+    const logoutBtn = document.getElementById('btn-logout');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', logout);
+    }
+
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
             // No autenticado
@@ -220,12 +228,6 @@ export function requireAuth(allowedRole) {
         if (userSpan) {
             const cachedName = sessionStorage.getItem('currentUsername');
             userSpan.textContent = cachedName || user.email.split('@')[0];
-        }
-
-        // Configurar botón de logout
-        const logoutBtn = document.getElementById('btn-logout');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', logout);
         }
 
         // Si la ruta requiere un rol específico y no coincide, redirigir
