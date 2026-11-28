@@ -36,9 +36,9 @@ Después de la fase unitaria se añadieron los niveles que faltaban:
 | Authentication Emulator: acceso, error, logout y recuperación | `auth.integration.test.js` | 5 | 5 aprobadas |
 | Navegador real: rutas y adaptación 375/768/1440 px | `e2e/static-pages.spec.js` | 14 | 14 aprobadas en Chromium sobre Windows |
 | Navegador real autenticado: acceso, pedido, cocina, incidencias, catálogo, reportes y usuarios | `e2e/functional-flow.spec.js` | 9 | 9 aprobadas en Chromium sobre Windows |
-| Paquete funcional ampliado: sesiones, pagos, DNI/RUC, NC parcial, rangos y recuperación | `e2e/functional-flow.spec.js` | 7 adicionales | Definidas; certificación final pendiente en Windows |
+| Paquete funcional ampliado: sesiones, pagos, DNI/RUC, NC parcial, rangos y recuperación | `e2e/functional-flow.spec.js` | 7 adicionales | 7 aprobadas en Chromium sobre Windows |
 
-Total previamente ejecutado y aprobado: **244 pruebas** (206 de Vitest, 15 de Firebase Emulator y 23 E2E con Playwright). El paquete final define 16 integraciones y 30 E2E; cuando la ejecución completa en Windows sea verde, el total será **252 pruebas**. Además de rutas y adaptación visual, se comprueban autenticación, permisos, pedido, comprobante, cocina, reposición, devolución, voucher, nota de crédito, catálogo, disponibilidad, reportes y usuarios.
+Total ejecutado y aprobado: **252 pruebas** (206 de Vitest, 16 de Firebase Emulator y 30 E2E con Playwright). Además de rutas y adaptación visual, se comprueban autenticación, permisos, pedido, comprobante, cocina, reposición, devolución, voucher, nota de crédito, catálogo, disponibilidad, reportes y usuarios.
 
 Comandos:
 
@@ -98,12 +98,12 @@ Las pruebas generadas con `it.each` cuentan una vez por cada dato de la tabla; p
 
 1. Los correlativos usan transacciones y el cierre de incidencias utiliza transacciones/lotes. Aun falta una prueba de carga concurrente contra el proyecto Firebase real antes de afirmar comportamiento productivo bajo alta concurrencia.
 2. La gestión de usuarios operativos ya evita conservar contraseñas legibles en Firestore y exige la clave actual al eliminar. Para un entorno productivo, la creación y eliminación privilegiada debería migrarse a una función backend con Firebase Admin SDK.
-3. La sesión única y la renovación posterior al cambio de contraseña ya están implementadas y cuentan con E2E definidas; falta certificar la ejecución final completa en Chromium sobre Windows.
+3. La sesión única y la recuperación de contraseña están certificadas en Chromium. Auth Emulator no reproduce toda la revocación productiva de tokens; por ello se verifican también clave antigua, clave nueva y rotación de sesión.
 4. Las reglas de seguridad sí cuentan ahora con pruebas automatizadas en Firestore Emulator para administrador, cajera, cocina y usuarios no autenticados. Aun así, las reglas del archivo de prueba deben contrastarse antes de desplegarlas en el proyecto real.
 5. Las consultas de DNI/RUC ya se prueban con un proveedor simulado y errores controlados. La comprobación contra el proveedor real debe mantenerse como prueba manual o integración controlada para evitar que una caída externa rompa la suite.
 6. `firestore.test.rules` existe exclusivamente para el emulador y no se despliega automáticamente. Antes de usar reglas equivalentes en producción se debe contrastar cada permiso con el proyecto Firebase real.
-7. Las E2E funcionales conectan navegador, Auth Emulator y Firestore Emulator para los recorridos principales. El paquete ampliado debe certificarse completo en Windows antes de marcarlo como resultado final.
+7. Las 30 E2E funcionales y estáticas ya fueron certificadas en Chromium. Firefox, WebKit, accesibilidad y servicios reales pertenecen al lote 3 independiente.
 
 ## Interpretación correcta del resultado
 
-La ejecución previamente certificada demuestra las reglas aisladas, los contratos DOM, 15 integraciones con Firebase Emulator y 23 verificaciones en Chromium, incluidas nueve funcionales autenticadas. El paquete final eleva la definición a 16 integraciones y 30 E2E, pero todavía debe ejecutarse completo en Windows. Ninguna suite local demuestra por sí sola el proyecto Firebase productivo, el proveedor externo, el correo real o la impresión física.
+La ejecución certificada demuestra las reglas aisladas, los contratos DOM, 16 integraciones con Firebase Emulator y 30 verificaciones en Chromium. Ninguna suite local demuestra por sí sola el proyecto Firebase productivo, el proveedor externo, el correo real o la impresión física; esos elementos están separados en el lote 3.
