@@ -20,6 +20,19 @@ Las 11 rutas fueron analizadas y la salida visible señaló `color-contrast` com
 
 La segunda ejecución aprobó 10 rutas y detectó solo `select-name` en `#tipo-boleta`. El texto “Tipo de Boleta” se convirtió en una etiqueta explícita asociada al selector. La tercera ejecución aprobó las **11 rutas en 8.9 segundos**, por lo que accesibilidad automática queda cerrada.
 
+### Resultado multinavegador
+
+La ejecución del 27 de noviembre de 2026 aprobó **42 de 42 pruebas en 30.9 segundos**:
+
+| Motor | Pruebas | Resultado |
+|---|---:|---|
+| Chromium | 14 | Aprobadas |
+| Firefox | 14 | Aprobadas |
+| WebKit | 14 | Aprobadas |
+| **Total** | **42** | **42 aprobadas, 0 fallidas** |
+
+Se comprobaron once rutas y ausencia de desborde horizontal en 375, 768 y 1440 píxeles. El bloque automatizado del lote 3 queda cerrado con 11 auditorías de accesibilidad y 42 verificaciones multinavegador.
+
 ## Preparación local
 
 ```powershell
