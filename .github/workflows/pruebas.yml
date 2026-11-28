@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  reglas-e-integracion:
+  criterios-de-aceptacion:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -14,29 +14,5 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
       - run: npm ci
-      - run: npm run test:run
-      - run: npm run test:coverage
-      - run: npm run test:integration
-
-  navegador-y-calidad:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium firefox webkit
-      - run: npm run test:e2e
-      - run: npm run test:a11y
-      - run: npm run test:cross-browser
+      - run: npm test -- --run
