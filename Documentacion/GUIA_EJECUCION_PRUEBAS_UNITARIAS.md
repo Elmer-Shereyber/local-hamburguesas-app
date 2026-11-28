@@ -136,6 +136,110 @@ Para repetir este flujo de forma automatizada, reproduce esas acciones con dos c
 |---|---|---|---|---|---|---|
 | | | | | | Pendiente | |
 
+## Laboratorio con código para el compañero
+
+### Ejemplo 1 · De una regla a una aserción en Vitest
+
+Esta variante de `CP-HU01-03` muestra cómo comparar entradas y salidas en el mismo orden. La ruta de importación corresponde a un archivo ubicado en `tests/`. Para practicar, abre el archivo existente de HU-01 y compara ambas formas de expresar el mismo caso.
+
+```javascript
+import { describe, expect, it } from 'vitest';
+import { esCantidadValida } from '../public/shared/pedido-rules.js';
+
+describe('HU-01 · Cantidad por producto', () => {
+  it('CP-HU01-03 | CA03 comprueba ambos bordes', () => {
+    const cantidades = [0, 1, 10, 11];             // Preparar
+    const obtenidos = cantidades.map(esCantidadValida); // Ejecutar
+    expect(obtenidos).toEqual([false, true, true, false]); // Comparar
+  });
+});
+```
+
+### Ejemplo 2 · De dos sesiones a una prueba de integración en navegador
+
+**Estado del ejemplo: preparado para ejecutar en el entorno académico.** Emite un pedido nuevo del día con una hamburguesa con preparación, déjalo pendiente y anota su comprobante completo. Usa cuentas de caja y cocina de ese entorno. Cada repetición necesita otro pedido pendiente porque el clic inicia la preparación.
+
+Desde la raíz del repositorio crea una carpeta de práctica **hermana del clon**. Así Playwright tiene sus propias dependencias. En PowerShell:
+
+```powershell
+cd ..
+mkdir laboratorio-hamburguesas
+cd laboratorio-hamburguesas
+npm init -y
+npm install -D @playwright/test
+npx playwright install chromium
+notepad cocina-caja.spec.cjs
+```
+
+Pega este archivo completo en el editor y guárdalo:
+
+```javascript
+const { test, expect } = require('@playwright/test');
+
+function dato(nombre) {
+  const valor = process.env[nombre];
+  if (!valor) throw new Error('Falta configurar ' + nombre);
+  return valor;
+}
+
+async function entrar(pagina, rol, destino) {
+  await pagina.goto(new URL('/login/index.html', dato('URL_PRUEBAS')).href);
+  await pagina.locator('#identifier').fill(dato(rol + '_USUARIO'));
+  await pagina.locator('#password').fill(dato(rol + '_CLAVE'));
+  await pagina.locator('#login-form [type="submit"]').click();
+  await expect(pagina).toHaveURL(url => url.pathname === destino);
+  await expect(pagina.locator('html')).toHaveAttribute('data-auth-ready', 'true');
+}
+
+test('INT-HU03-CA07-01 | caja recibe el cambio de cocina', async ({ page: caja, browser }) => {
+  // Preparar dos sesiones independientes y seleccionar el pedido del ejercicio.
+  const cocina = await browser.newContext();
+  try {
+    const cocinero = await cocina.newPage();
+    await entrar(caja, 'CAJA', '/cajera/registrar-pedido.html');
+    await entrar(cocinero, 'COCINA', '/cocina/pedidos.html');
+    await caja.goto(new URL('/cajera/consultar-pedidos.html', dato('URL_PRUEBAS')).href);
+
+    const numero = dato('COMPROBANTE');
+    await caja.locator('#buscar-comprobante').fill(numero);
+    const fila = caja.locator('#pedidos-tbody tr').filter({
+      has: caja.getByText(numero, { exact: true })
+    });
+    await expect(fila).toHaveCount(1);
+    await expect(fila.getByText('Pendiente', { exact: true })).toBeVisible();
+    const id = await fila.locator('.ver-detalle').getAttribute('data-id');
+    if (!id || !/^[a-zA-Z0-9_-]+$/.test(id)) throw new Error('ID de pedido inesperado');
+
+    // Actuar en cocina sobre ese ID. El clic cambia el pedido de prueba.
+    const iniciar = cocinero.locator('[data-action="iniciar-todo"][data-pid="' + id + '"]');
+    await iniciar.click();
+
+    // Observar en la sesión original de caja, sin recargarla.
+    await expect(fila.getByText('En preparación', { exact: true }))
+      .toBeVisible({ timeout: 15000 });
+  } finally {
+    await cocina.close();
+  }
+});
+```
+
+En la misma ventana de PowerShell, introduce los datos del entorno. Usa PowerShell 7 para la entrada oculta con `-MaskInput`. En Windows PowerShell 5.1 puedes cargar las claves con `(Get-Credential -UserName $env:CAJA_USUARIO -Message 'Cuenta de caja').GetNetworkCredential().Password` y su equivalente para cocina.
+
+```powershell
+$env:URL_PRUEBAS = Read-Host 'URL completa del entorno académico'
+$env:COMPROBANTE = Read-Host 'Serie y número del pedido pendiente'
+$env:CAJA_USUARIO = Read-Host 'Usuario de caja'
+$env:CAJA_CLAVE = Read-Host 'Clave de caja' -MaskInput
+$env:COCINA_USUARIO = Read-Host 'Usuario de cocina'
+$env:COCINA_CLAVE = Read-Host 'Clave de cocina' -MaskInput
+npx playwright test cocina-caja.spec.cjs --headed --workers=1 --reporter=list
+Remove-Item Env:CAJA_CLAVE, Env:COCINA_CLAVE
+```
+
+Si termina con `1 passed`, registra el comprobante de prueba, el commit desplegado y el cambio observado de Pendiente a En preparación. Si falla, la línea indicada distingue tres situaciones: acceso al entorno, identificación del pedido y propagación del nuevo estado. Anota en el informe hasta qué paso llegó.
+
+**Cómo adaptarlo al siguiente criterio.** Para HU-08/CA07 prepara un pedido *Listo*, localízalo en ambas sesiones y comprueba primero que la tarjeta existe en cocina. Desde la fila de caja pulsa `.confirmar-entrega`. La aserción final debe comprobar que la tarjeta de **ese pedido** desaparece de cocina. Conserva dos sesiones, cambia la acción y escribe el resultado que exige ese CA.
+
 ## Archivos oficiales de la entrega
 
 - `Documentacion/CASOS_DE_PRUEBA_CA_15_HU.md`: historias, CA, casos, datos y resultados.
