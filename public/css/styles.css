@@ -2,19 +2,19 @@
 
 :root {
     /* Paleta Premium */
-    --primary-color: #EF4444; /* Rojo vibrante y apetitoso */
-    --primary-hover: #DC2626;
+    --primary-color: #B91C1C; /* Rojo accesible sobre blanco y con texto blanco */
+    --primary-hover: #991B1B;
     --secondary-color: #F8FAFC; 
-    --accent-color: #3B82F6; /* Azul moderno para acciones secundarias */
-    --accent-hover: #2563EB;
+    --accent-color: #1D4ED8; /* Azul AA para acciones secundarias */
+    --accent-hover: #1E40AF;
     --text-main: #0F172A; /* Gris muy oscuro, casi negro */
     --text-muted: #64748B;
     --bg-main: #F1F5F9; /* Fondo de pantalla suave */
     --card-bg: #FFFFFF;
     --border-color: #E2E8F0;
-    --success-color: #10B981;
-    --success-hover: #059669;
-    --warning-color: #F59E0B;
+    --success-color: #047857;
+    --success-hover: #065F46;
+    --warning-color: #B45309;
     
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
