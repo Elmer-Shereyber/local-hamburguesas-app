@@ -240,6 +240,83 @@ Si termina con `1 passed`, registra el comprobante de prueba, el commit desplega
 
 **Cómo adaptarlo al siguiente criterio.** Para HU-08/CA07 prepara un pedido *Listo*, localízalo en ambas sesiones y comprueba primero que la tarjeta existe en cocina. Desde la fila de caja pulsa `.confirmar-entrega`. La aserción final debe comprobar que la tarjeta de **ese pedido** desaparece de cocina. Conserva dos sesiones, cambia la acción y escribe el resultado que exige ese CA.
 
+### Ejemplo 3 · HU-01/CA07 · Distinguir las dos condiciones del pago híbrido
+
+Para un pedido de S/ 15 se exigen dos medios de pago y una suma exacta. Conviene cambiar una condición a la vez. Con S/ 15 en efectivo la suma es correcta, pero falta el segundo medio. Con S/ 10 en efectivo y S/ 4 en Yape están ambos medios, pero falta un sol.
+
+Este bloque muestra otra forma de escribir el caso existente `CP-HU01-07`. Para reproducir el caso registrado se puede ejecutar directamente el archivo indicado debajo.
+
+```javascript
+import { expect, it } from 'vitest';
+import { esPagoHibridoValido } from '../public/shared/pedido-rules.js';
+
+it('CP-HU01-07 | exige dos medios y el importe exacto', () => {
+  const total = 15;
+  expect(esPagoHibridoValido(total, { efectivo: 10, yape: 5 })).toBe(true);
+  expect(esPagoHibridoValido(total, { efectivo: 15 })).toBe(false);
+  expect(esPagoHibridoValido(total, { efectivo: 10, yape: 4 })).toBe(false);
+});
+```
+
+```powershell
+npm test -- --run tests/hu-01-registrar-pedido.test.js -t CP-HU01-07
+```
+
+### Ejemplo 4 · HU-04/CA01 · Preparar un producto con historial
+
+El pedido contiene tres hamburguesas y una ya fue repuesta. Quedan dos unidades reclamables. Al solicitar tres, el sistema estaría atendiendo una unidad por segunda vez. El mismo producto sirve para comprobar tanto el cálculo como la decisión.
+
+```javascript
+import { expect, it } from 'vitest';
+import { unidadesReclamables, cantidadReclamoValida } from '../public/shared/incidencia-rules.js';
+
+it('CP-HU04-02 | descuenta la reposición anterior', () => {
+  const producto = {
+    id: 'p1', nombre: 'Hamburguesa', cantidad: 3,
+    unidadesRepuestas: 1, unidadesDevueltas: 0
+  };
+
+  expect(unidadesReclamables(producto)).toBe(2);
+  expect(cantidadReclamoValida(producto, 2)).toBe(true);
+  expect(cantidadReclamoValida(producto, 3)).toBe(false);
+});
+```
+
+```powershell
+npm test -- --run tests/hu-04-registrar-reposicion.test.js -t CP-HU04-02
+```
+
+Una variante para practicar consiste en cambiar las unidades devueltas de cero a uno. Antes de ejecutar, calcular cuántas quedan y escribir el nuevo resultado esperado. El estado del pedido entregado se comprueba por separado en `CP-HU04-01`.
+
+### Ejemplo 5 · HU-14/CA01 y CA02 · Observar el cierre desde caja
+
+Se necesita la aplicación en el entorno académico y una cuenta de caja habilitada. La evidencia buscada es visible en dos momentos: el botón está disponible con la sesión abierta y, tras un clic, aparece el formulario de ingreso. Este recorrido cubre la pantalla de registro de pedidos. Para completar el CA01 se debe repetir en las demás pantallas protegidas y registrar cada resultado.
+
+Añadir este bloque al final de `cocina-caja.spec.cjs` del ejemplo 2. Reutiliza la función `entrar` y las importaciones de ese archivo. Configurar `URL_PRUEBAS`, `CAJA_USUARIO` y `CAJA_CLAVE` como en ese ejemplo antes de ejecutarlo.
+
+```javascript
+test('INT-HU14-CA02-01 | cerrar sesión desde caja', async ({ page }) => {
+  await entrar(page, 'CAJA', '/cajera/registrar-pedido.html');
+  const cerrar = page.getByRole('button', { name: 'Cerrar Sesión', exact: true });
+  await expect(cerrar).toBeVisible();
+  await cerrar.click();
+  await expect(page).toHaveURL(url => url.pathname === '/login/index.html');
+  await expect(page.locator('#identifier')).toBeVisible();
+});
+```
+
+Desde la carpeta de laboratorio:
+
+```powershell
+npx playwright test cocina-caja.spec.cjs --grep INT-HU14-CA02-01 --headed --reporter=list
+```
+
+| Caso | Resultado esperado | Resultado obtenido | Estado |
+|---|---|---|---|
+| INT-HU14-CA02-01 | Un clic en «Cerrar Sesión» desde caja devuelve al formulario de ingreso. | Pendiente de ejecución en el entorno académico. | Pendiente |
+
+Al ejecutarlo, sustituir el texto pendiente por la ruta y el control observados. Si falla, anotar la primera aserción que falló y conservar la salida. Una redirección correcta con el formulario ausente también merece registrarse. Los ejemplos 3 y 4 explican casos incluidos en las 88 pruebas unitarias. El ejemplo 5 tiene su propio registro de interfaz.
+
 ## Documentos y archivos de referencia
 
 - `Documentacion/CASOS_DE_PRUEBA_CA_15_HU.md`: historias, CA, casos, datos y resultados.
