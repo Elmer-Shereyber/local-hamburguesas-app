@@ -1,8 +1,8 @@
-# Guía de ejecución de pruebas unitarias
+# Guía metodológica de diseño y ejecución de pruebas
 
 ## Objetivo
 
-Ejecutar y explicar las pruebas automatizadas derivadas directamente de los criterios de aceptación de las 15 historias de usuario.
+Esta guía documenta cómo se seleccionaron los datos de prueba, qué comprueba cada aserción y cómo reproducir los resultados de las 15 historias de usuario (HU). El [informe de resultados](CASOS_DE_PRUEBA_CA_15_HU.md) reúne la evidencia obtenida. Para los criterios de aceptación (CA) que dependen de la aplicación desplegada, esta guía especifica las condiciones iniciales, los pasos y la evidencia que permitirá completar el informe.
 
 ## Requisitos
 
@@ -94,9 +94,9 @@ En casos simples, Arrange y Act pueden escribirse directamente dentro del `expec
 
 La especificación se tomó de las cinco épicas de esta carpeta. Para cada HU se leyó el enunciado de sus CA, se identificó qué decisión toma el código y se eligieron entradas capaces de distinguir una implementación correcta de una incorrecta. Cada archivo de Vitest agrupa una historia con `describe`; cada `it` conserva el ID del caso y su CA. Las funciones se importan de los módulos de la aplicación en `public/shared/`.
 
-**Ejemplo para repetir en clase.** Abre [Registrar pedido](1_Gestionar_Pedidos.md) y busca HU-01/CA03. La cantidad permitida va de 1 a 10. Probar únicamente 5 dejaría sin descubrir un error tan sencillo como escribir `cantidad < 10`. Elegimos los dos extremos y los enteros inmediatamente exteriores.
+**Selección de datos de frontera.** El criterio CA03 de [HU-01 · Registrar pedido](1_Gestionar_Pedidos.md) admite de 1 a 10 unidades por producto. Una implementación que usara `cantidad < 10` aceptaría 5 pero rechazaría 10. Para detectar errores en ambos extremos se eligieron 0, 1, 10 y 11.
 
-| Cantidad | Resultado esperado de `esCantidadValida` | Qué detecta |
+| Cantidad | Resultado esperado de `esCantidadValida` | Defecto que revelaría un fallo |
 |---:|---|---|
 | 0 | `false` | Se admitió una cantidad inferior al mínimo |
 | 1 | `true` | Se excluyó el mínimo permitido |
@@ -109,7 +109,7 @@ Busca `CP-HU01-03` en [la prueba de HU-01](../tests/hu-01-registrar-pedido.test.
 npx vitest run tests/hu-01-registrar-pedido.test.js -t CP-HU01-03 --reporter=verbose
 ```
 
-## Cómo continuar cuando la aplicación esté levantada
+## Procedimiento de verificación en el entorno desplegado
 
 1. **Identifica la versión.** En tu clon ejecuta `git switch pruebas-unitarias-guiadas`, `git pull --ff-only` y `git rev-parse --short HEAD`. Registra también el commit publicado en la URL académica. Para probar esa versión, verifica que ambos coincidan. Ejecuta la suite como se explica arriba para obtener la referencia unitaria.
 2. **Prepara el entorno.** Usa la URL de pruebas que publique el equipo desde `public/`, cuentas de prueba para los roles que intervienen y pedidos identificables. Comprueba que puedes iniciar sesión y consultar el catálogo. Si trabajas en localhost, la [configuración](../public/shared/firebase-config.js) espera Auth en 9099 y Firestore en 8085 para `demo-burger-local`. En ese caso se necesitan los emuladores con cuentas y datos cargados además del servidor web.
@@ -118,7 +118,7 @@ npx vitest run tests/hu-01-registrar-pedido.test.js -t CP-HU01-03 --reporter=ver
 5. **Ejecuta y conserva evidencia.** Anota qué ocurrió, fecha, versión y captura o registro. Usa «Aprobada» cuando coincida con lo esperado, «Fallida» cuando observes una diferencia y «Bloqueada» cuando falte un requisito del entorno. Si falla, conserva el primer resultado y añade la repetición con el commit corregido.
 6. **Actualiza el informe.** Añade el caso bajo su HU, identifica el nivel (interfaz o integración) y enlaza la evidencia. Actualiza el resumen por nivel. Marca un CA como verificado de forma integral cuando exista evidencia para todas las condiciones de su enunciado. Varias ejecuciones sobre un mismo CA siguen correspondiendo a un solo criterio.
 
-### Primer caso para ejecutar en pareja
+### Protocolo INT-HU03-CA07-01 · Sincronización entre caja y cocina
 
 | Campo | INT-HU03-CA07-01 · Actualización de estados |
 |---|---|
@@ -136,11 +136,11 @@ Para repetir este flujo de forma automatizada, reproduce esas acciones con dos c
 |---|---|---|---|---|---|---|
 | | | | | | Pendiente | |
 
-## Laboratorio con código para el compañero
+## Ejemplos reproducibles de automatización
 
 ### Ejemplo 1 · De una regla a una aserción en Vitest
 
-Esta variante de `CP-HU01-03` muestra cómo comparar entradas y salidas en el mismo orden. La ruta de importación corresponde a un archivo ubicado en `tests/`. Para practicar, abre el archivo existente de HU-01 y compara ambas formas de expresar el mismo caso.
+Esta variante de `CP-HU01-03` muestra cómo comparar entradas y salidas en el mismo orden. La ruta de importación corresponde a un archivo ubicado en `tests/`. El [archivo de HU-01](../tests/hu-01-registrar-pedido.test.js) comprueba cada cantidad por separado. En la variante siguiente, la posición de cada valor booleano identifica la entrada que lo produjo.
 
 ```javascript
 import { describe, expect, it } from 'vitest';
@@ -240,7 +240,7 @@ Si termina con `1 passed`, registra el comprobante de prueba, el commit desplega
 
 **Cómo adaptarlo al siguiente criterio.** Para HU-08/CA07 prepara un pedido *Listo*, localízalo en ambas sesiones y comprueba primero que la tarjeta existe en cocina. Desde la fila de caja pulsa `.confirmar-entrega`. La aserción final debe comprobar que la tarjeta de **ese pedido** desaparece de cocina. Conserva dos sesiones, cambia la acción y escribe el resultado que exige ese CA.
 
-## Archivos oficiales de la entrega
+## Documentos y archivos de referencia
 
 - `Documentacion/CASOS_DE_PRUEBA_CA_15_HU.md`: historias, CA, casos, datos y resultados.
 - `Documentacion/GUIA_EJECUCION_PRUEBAS_UNITARIAS.md`: comandos y explicación.
