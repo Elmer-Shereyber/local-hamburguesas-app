@@ -588,6 +588,8 @@ La primera ejecución del paquete final aprobó las 206 pruebas de Vitest, las 1
 
 En la segunda ejecución, el cierre de sesión aprobó y Playwright avanzó hasta el recorrido del catálogo. Allí una navegación inmediata de Inicio a Productos recibió un estado transitorio de caché del listener de sesión y regresó al login. La protección de rutas ahora confirma primero el token con `getDocFromServer` y descarta snapshots exclusivamente locales antes de evaluar una expulsión.
 
+La tercera ejecución mostró la misma familia de carrera al comprobar que cajera no puede abrir Administración: la navegación abandonaba la página mientras su validación anterior seguía pendiente. `requireAuth` ahora invalida su trabajo al recibir `pagehide`, evita que una página abandonada limpie la sesión y publica `data-auth-ready=true` al completar token, sesión y rol. El helper de Playwright espera esa señal antes de continuar.
+
 ## Formato para documentar cada prueba
 
 Cada prueba añadida se registrará con esta información:
@@ -654,3 +656,4 @@ Ejecutar las tres suites completas en Windows y registrar el resultado final. De
 - **2026-11-27:** paquete final preparado con 30 E2E, sesión única, recuperación completa, variantes de pago/comprobante/devolución y escrituras atómicas; certificación visual pendiente.
 - **2026-11-27:** la primera ejecución final detectó una carrera al conectar el botón de cierre de sesión; se corrigió sin alterar las reglas de negocio y quedó pendiente repetir Playwright.
 - **2026-11-27:** la segunda ejecución aprobó 20 E2E antes de detectar una lectura transitoria de sesión al navegar a Productos; se añadió confirmación de servidor y filtrado de caché.
+- **2026-11-27:** la tercera ejecución detectó una validación pendiente de la página abandonada; se vinculó la protección a `pagehide` y Playwright espera la señal estable `data-auth-ready`.
