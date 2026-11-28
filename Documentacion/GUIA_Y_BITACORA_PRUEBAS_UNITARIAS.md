@@ -592,6 +592,8 @@ La tercera ejecución mostró la misma familia de carrera al comprobar que cajer
 
 La cuarta ejecución aprobó 23 E2E y alcanzó por primera vez la prueba de sesión única. La expulsión ocurrió, pero `signOut` iniciaba la navegación antes de mostrar el aviso; Playwright recibió un diálogo perteneciente a una página ya desmontada. Los cierres forzados ahora muestran primero el aviso y luego limpian, cierran y redirigen la sesión.
 
+La quinta ejecución aprobó 27 E2E, incluida la sesión única. La prueba de devolución parcial intentó extraer el número de boleta mientras el ticket aún mostraba su estado de carga. Se añadió una espera explícita por el patrón `B001-000000` antes de leer y reutilizar el comprobante en la Nota de Crédito tipo 07.
+
 ## Formato para documentar cada prueba
 
 Cada prueba añadida se registrará con esta información:
@@ -660,3 +662,4 @@ Ejecutar las tres suites completas en Windows y registrar el resultado final. De
 - **2026-11-27:** la segunda ejecución aprobó 20 E2E antes de detectar una lectura transitoria de sesión al navegar a Productos; se añadió confirmación de servidor y filtrado de caché.
 - **2026-11-27:** la tercera ejecución detectó una validación pendiente de la página abandonada; se vinculó la protección a `pagehide` y Playwright espera la señal estable `data-auth-ready`.
 - **2026-11-27:** la cuarta ejecución aprobó 23 E2E antes de detectar el orden incorrecto entre aviso y cierre forzado; se muestra el diálogo antes de iniciar la redirección.
+- **2026-11-27:** la quinta ejecución aprobó 27 E2E; se corrigió la sincronización del ticket antes de validar la devolución parcial y su Nota de Crédito tipo 07.
