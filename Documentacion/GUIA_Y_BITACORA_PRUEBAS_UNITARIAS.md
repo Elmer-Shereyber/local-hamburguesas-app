@@ -573,16 +573,16 @@ Se preparó en un único bloque la automatización restante que puede ejecutarse
 
 También se reemplazaron las actualizaciones separadas de correlativos e incidencias por transacciones o lotes de Firestore. Así se evitan correlativos duplicados y estados parcialmente escritos entre devolución, pedido raíz y reposición.
 
-Resultados disponibles antes de la certificación visual final:
+Resultado final certificado en Windows:
 
 ```text
 Vitest:               206 passed
 Firebase Emulator:     16 passed
-Playwright:            30 tests reconocidas, ejecución pendiente en Windows
+Playwright:             30 passed
 npm audit:              0 vulnerabilidades
 ```
 
-El total previamente certificado se mantiene temporalmente en **244** hasta ejecutar las 30 E2E completas en Chromium sobre Windows. Si todas aprueban, el resultado final será **252 pruebas**: 206 de Vitest, 16 de integración y 30 E2E.
+El total final quedó en **252 pruebas automatizadas aprobadas y 0 fallidas**: 206 de Vitest, 16 de integración y 30 E2E en Chromium sobre Windows.
 
 La primera ejecución del paquete final aprobó las 206 pruebas de Vitest, las 16 de integración y las 14 E2E estáticas. La primera E2E funcional detectó que el botón de cierre de sesión se conectaba después de validar asincrónicamente el token y Firestore; un clic inmediato podía no ejecutarse. El evento se trasladó al inicio de `requireAuth`, quedando pendiente repetir las 30 E2E.
 
@@ -595,6 +595,31 @@ La cuarta ejecución aprobó 23 E2E y alcanzó por primera vez la prueba de sesi
 La quinta ejecución aprobó 27 E2E, incluida la sesión única. La prueba de devolución parcial intentó extraer el número de boleta mientras el ticket aún mostraba su estado de carga. Se añadió una espera explícita por el patrón `B001-000000` antes de leer y reutilizar el comprobante en la Nota de Crédito tipo 07.
 
 La sexta ejecución aprobó 29 E2E. Auth Emulator cambió correctamente la contraseña y rechazó la anterior, pero conservó el token de la sesión ya abierta. Firebase documenta que el restablecimiento revoca los tokens en producción, aunque un ID token emitido puede permanecer activo hasta expirar si no se valida su revocación desde backend. La E2E local comprueba por ello la clave anterior, la nueva y la expulsión de la sesión previa mediante la rotación del token de sesión al volver a ingresar.
+
+La séptima ejecución aprobó las **30 E2E en 32.9 segundos**. Con este resultado se cerró el alcance funcional automatizado de las 15 HU.
+
+### Sesión 17 — Inicio del lote 3 de calidad no funcional
+
+**Fecha:** 27 de noviembre de 2026
+
+Se mantuvo inalterado el bloque certificado de 252 pruebas y se creó un lote independiente para:
+
+- cobertura final con los umbrales existentes;
+- accesibilidad WCAG 2.1 A/AA mediante axe-core;
+- estructura y adaptación en Chromium, Firefox y WebKit;
+- ejecución continua con GitHub Actions;
+- lista de verificaciones manuales y productivas con evidencia.
+
+La cobertura final volvió a aprobar:
+
+```text
+Statements: 88.45 %
+Branches:   78.23 %
+Functions:  98.97 %
+Lines:      94.83 %
+```
+
+Las suites de accesibilidad y compatibilidad quedaron preparadas para ejecutarse en Windows después de instalar los tres navegadores de Playwright. Sus resultados no se sumarán a 252 hasta ser ejecutados y aprobados.
 
 ## Formato para documentar cada prueba
 
@@ -631,11 +656,12 @@ Cada prueba añadida se registrará con esta información:
 | 13 | 18 E2E | 18 | 0 | Corregir selector funcional de reposición |
 | 14 | 15 integración + 20 E2E | 35 | 0 | Ampliar los recorridos de las HU restantes |
 | 15 | 23 E2E | 23 | 0 | Certificar el paquete final de casos límite |
-| 16 | 206 Vitest + 16 integración | 222 | 0 | Certificar 30 E2E finales en Windows |
+| 16 | 206 Vitest + 16 integración + 30 E2E | 252 | 0 | Cerrado |
+| 17 | Cobertura final | 206 | 0 | Ejecutar 11 accesibilidad y 42 multinavegador |
 
 ## Próximo paso recomendado
 
-Ejecutar las tres suites completas en Windows y registrar el resultado final. Después solo quedarán verificaciones que no conviene automatizar en esta suite académica: proveedor DNI/RUC real, impresión física, correo real de recuperación, despliegue de reglas productivas y una prueba de carga concurrente.
+Ejecutar el lote 3 descrito en `Documentacion/LOTE_3_CALIDAD_Y_PRUEBAS_MANUALES.md`: primero accesibilidad en Chromium, después las 42 pruebas estáticas en tres motores y finalmente las verificaciones manuales controladas.
 
 ## Historial de actualización
 
@@ -666,3 +692,5 @@ Ejecutar las tres suites completas en Windows y registrar el resultado final. De
 - **2026-11-27:** la cuarta ejecución aprobó 23 E2E antes de detectar el orden incorrecto entre aviso y cierre forzado; se muestra el diálogo antes de iniciar la redirección.
 - **2026-11-27:** la quinta ejecución aprobó 27 E2E; se corrigió la sincronización del ticket antes de validar la devolución parcial y su Nota de Crédito tipo 07.
 - **2026-11-27:** la sexta ejecución aprobó 29 E2E; la recuperación se adaptó a la limitación de revocación del Auth Emulator sin atribuirle el comportamiento del backend productivo.
+- **2026-11-27:** la séptima ejecución aprobó las 30 E2E; total funcional definitivo de 252 pruebas aprobadas y 0 fallidas.
+- **2026-11-27:** inició el lote 3 con cobertura final aprobada, accesibilidad, compatibilidad multinavegador, GitHub Actions y lista manual separada.
