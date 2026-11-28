@@ -193,10 +193,10 @@ export function requireAuth(allowedRole) {
             if (!paginaActiva) return;
             if (snap.metadata.fromCache) return;
             if (!cierreEnCurso && (!snap.exists() || snap.data().token !== tokenLocal)) {
+                alert("Se inició sesión con esta cuenta en otro dispositivo. Esta sesión ha finalizado.");
                 sessionStorage.clear();
                 await signOut(auth).catch(() => {});
-                alert("Se inició sesión con esta cuenta en otro dispositivo. Esta sesión ha finalizado.");
-                window.location.href = '../login/index.html';
+                if (paginaActiva) window.location.href = '../login/index.html';
             }
         });
         
@@ -223,19 +223,19 @@ export function requireAuth(allowedRole) {
                 // Si el documento no existe o pertenece a otro usuario creado posteriormente
                 if (!uSnap.exists() || (uSnap.data().email && uSnap.data().email.toLowerCase() !== user.email.toLowerCase())) {
                     // La cuenta fue eliminada o reemplazada por el administrador -> cierre forzado de sesión (HU-10 CA07)
+                    alert("Tu cuenta ha sido eliminada por el Administrador. La sesión ha finalizado.");
                     sessionStorage.clear();
                     await signOut(auth);
-                    alert("Tu cuenta ha sido eliminada por el Administrador. La sesión ha finalizado.");
-                    window.location.href = '../login/index.html';
+                    if (paginaActiva) window.location.href = '../login/index.html';
                     return;
                 }
 
                 // Suscripción en tiempo real: si el admin elimina o recrea la cuenta mientras está activa en pantalla
                 onSnapshot(uDocRef, (snap) => {
-                    if (!snap.exists() || (snap.data().email && snap.data().email.toLowerCase() !== user.email.toLowerCase())) {
+                    if (paginaActiva && (!snap.exists() || (snap.data().email && snap.data().email.toLowerCase() !== user.email.toLowerCase()))) {
+                        alert("Tu cuenta ha sido eliminada por el Administrador. La sesión ha finalizado.");
                         sessionStorage.clear();
                         signOut(auth);
-                        alert("Tu cuenta ha sido eliminada por el Administrador. La sesión ha finalizado.");
                         window.location.href = '../login/index.html';
                     }
                 });
