@@ -625,6 +625,8 @@ La primera auditoría de accesibilidad ejecutó las 11 rutas y detectó principa
 
 La segunda auditoría aprobó 10 de 11 rutas. La única observación restante fue crítica: `#tipo-boleta` carecía de nombre accesible porque su texto visible no estaba asociado mediante `for`. Se vinculó `label[for="tipo-boleta"]` con el selector y quedó pendiente la confirmación final.
 
+La tercera auditoría aprobó las **11 pruebas de accesibilidad en 8.9 segundos**, sin violaciones serias o críticas WCAG 2.1 A/AA. El siguiente bloque del lote 3 es la ejecución de 42 pruebas estáticas y responsive en Chromium, Firefox y WebKit.
+
 ## Formato para documentar cada prueba
 
 Cada prueba añadida se registrará con esta información:
@@ -661,7 +663,7 @@ Cada prueba añadida se registrará con esta información:
 | 14 | 15 integración + 20 E2E | 35 | 0 | Ampliar los recorridos de las HU restantes |
 | 15 | 23 E2E | 23 | 0 | Certificar el paquete final de casos límite |
 | 16 | 206 Vitest + 16 integración + 30 E2E | 252 | 0 | Cerrado |
-| 17 | Cobertura final | 206 | 0 | Ejecutar 11 accesibilidad y 42 multinavegador |
+| 17 | Cobertura final + 11 accesibilidad | 217 | 0 | Ejecutar 42 multinavegador |
 
 ## Próximo paso recomendado
 
