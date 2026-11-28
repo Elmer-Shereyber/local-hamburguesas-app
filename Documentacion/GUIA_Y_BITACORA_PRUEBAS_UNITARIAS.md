@@ -627,6 +627,8 @@ La segunda auditoría aprobó 10 de 11 rutas. La única observación restante fu
 
 La tercera auditoría aprobó las **11 pruebas de accesibilidad en 8.9 segundos**, sin violaciones serias o críticas WCAG 2.1 A/AA. El siguiente bloque del lote 3 es la ejecución de 42 pruebas estáticas y responsive en Chromium, Firefox y WebKit.
 
+La matriz multinavegador aprobó las **42 pruebas en 30.9 segundos**: 14 en Chromium, 14 en Firefox y 14 en WebKit. Las once rutas conservaron su estructura y las pantallas seleccionadas no presentaron desborde horizontal en 375, 768 ni 1440 píxeles en ninguno de los tres motores.
+
 ## Formato para documentar cada prueba
 
 Cada prueba añadida se registrará con esta información:
@@ -663,7 +665,7 @@ Cada prueba añadida se registrará con esta información:
 | 14 | 15 integración + 20 E2E | 35 | 0 | Ampliar los recorridos de las HU restantes |
 | 15 | 23 E2E | 23 | 0 | Certificar el paquete final de casos límite |
 | 16 | 206 Vitest + 16 integración + 30 E2E | 252 | 0 | Cerrado |
-| 17 | Cobertura final + 11 accesibilidad | 217 | 0 | Ejecutar 42 multinavegador |
+| 17 | 11 accesibilidad + 42 multinavegador | 53 | 0 | Iniciar verificaciones externas/manuales |
 
 ## Próximo paso recomendado
 
