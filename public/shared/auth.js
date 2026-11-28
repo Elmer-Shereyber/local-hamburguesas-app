@@ -132,6 +132,11 @@ export async function logout() {
  * @param {string|string[]} allowedRole (ej. 'cajera', 'cocina', 'admin')
  */
 export function requireAuth(allowedRole) {
+    let paginaActiva = true;
+    window.addEventListener('pagehide', () => {
+        paginaActiva = false;
+    }, { once: true });
+
     // El botón debe responder desde que el DOM invoca requireAuth. Las
     // validaciones de token y Firestore son asíncronas y no deben retrasar la
     // posibilidad de cerrar sesión.
@@ -141,6 +146,7 @@ export function requireAuth(allowedRole) {
     }
 
     onAuthStateChanged(auth, async (user) => {
+        if (!paginaActiva) return;
         if (!user) {
             // No autenticado
             window.location.href = '../login/index.html';
@@ -152,11 +158,13 @@ export function requireAuth(allowedRole) {
         try {
             await user.getIdToken(true);
         } catch {
+            if (!paginaActiva) return;
             sessionStorage.clear();
             await signOut(auth).catch(() => {});
             window.location.href = '../login/index.html';
             return;
         }
+        if (!paginaActiva) return;
 
         let currentRole = getUserRole(user.email);
         const tokenLocal = sessionStorage.getItem('sessionToken');
@@ -173,6 +181,7 @@ export function requireAuth(allowedRole) {
         // pantallas, un listener puede emitir un snapshot vacío desde caché
         // antes de recibir el documento real y no debe cerrar una sesión válida.
         const sesionConfirmada = await getDocFromServer(sesionRef).catch(() => null);
+        if (!paginaActiva) return;
         if (!sesionConfirmada?.exists() || sesionConfirmada.data().token !== tokenLocal) {
             sessionStorage.clear();
             await signOut(auth).catch(() => {});
@@ -181,6 +190,7 @@ export function requireAuth(allowedRole) {
         }
 
         onSnapshot(sesionRef, { includeMetadataChanges: true }, async (snap) => {
+            if (!paginaActiva) return;
             if (snap.metadata.fromCache) return;
             if (!cierreEnCurso && (!snap.exists() || snap.data().token !== tokenLocal)) {
                 sessionStorage.clear();
@@ -247,8 +257,13 @@ export function requireAuth(allowedRole) {
             const allowed = Array.isArray(allowedRole) ? allowedRole.includes(currentRole) : currentRole === allowedRole;
             if (!allowed) {
                 redirectToRoleHome(currentRole);
+                return;
             }
         }
+
+        // Señal estable para pruebas E2E y para cualquier inicialización que
+        // necesite saber que autenticación, sesión y rol ya fueron validados.
+        document.documentElement.dataset.authReady = 'true';
     });
 }
 
