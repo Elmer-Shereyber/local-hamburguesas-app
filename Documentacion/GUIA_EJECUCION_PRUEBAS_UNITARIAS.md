@@ -140,6 +140,10 @@ Para repetir este flujo de forma automatizada, reproduce esas acciones con dos c
 
 ### Ejemplo 1 · De una regla a una aserción en Vitest
 
+**Tipo de prueba:** Unitaria de regla de negocio.  
+**Herramienta:** Vitest.  
+**Entorno:** Node.js local, desde la raíz del repositorio.
+
 Esta variante de `CP-HU01-03` muestra cómo comparar entradas y salidas en el mismo orden. La ruta de importación corresponde a un archivo ubicado en `tests/`. El [archivo de HU-01](../tests/hu-01-registrar-pedido.test.js) comprueba cada cantidad por separado. En la variante siguiente, la posición de cada valor booleano identifica la entrada que lo produjo.
 
 ```javascript
@@ -156,6 +160,10 @@ describe('HU-01 · Cantidad por producto', () => {
 ```
 
 ### Ejemplo 2 · De dos sesiones a una prueba de integración en navegador
+
+**Tipo de prueba:** Interfaz e integración entre caja y cocina.  
+**Herramienta:** Playwright.  
+**Entorno:** Navegador local conectado a la aplicación del entorno académico, desde la carpeta de laboratorio.
 
 **Estado del ejemplo: preparado para ejecutar en el entorno académico.** Emite un pedido nuevo del día con una hamburguesa con preparación, déjalo pendiente y anota su comprobante completo. Usa cuentas de caja y cocina de ese entorno. Cada repetición necesita otro pedido pendiente porque el clic inicia la preparación.
 
@@ -242,6 +250,10 @@ Si termina con `1 passed`, registra el comprobante de prueba, el commit desplega
 
 ### Ejemplo 3 · HU-01/CA07 · Distinguir las dos condiciones del pago híbrido
 
+**Tipo de prueba:** Unitaria de regla de negocio.  
+**Herramienta:** Vitest.  
+**Entorno:** Node.js local, desde la raíz del repositorio.
+
 Para un pedido de S/ 15 se exigen dos medios de pago y una suma exacta. Conviene cambiar una condición a la vez. Con S/ 15 en efectivo la suma es correcta, pero falta el segundo medio. Con S/ 10 en efectivo y S/ 4 en Yape están ambos medios, pero falta un sol.
 
 Este bloque muestra otra forma de escribir el caso existente `CP-HU01-07`. Para reproducir el caso registrado se puede ejecutar directamente el archivo indicado debajo.
@@ -263,6 +275,10 @@ npm test -- --run tests/hu-01-registrar-pedido.test.js -t CP-HU01-07
 ```
 
 ### Ejemplo 4 · HU-04/CA01 · Preparar un producto con historial
+
+**Tipo de prueba:** Unitaria de regla de negocio.  
+**Herramienta:** Vitest.  
+**Entorno:** Node.js local, desde la raíz del repositorio.
 
 El pedido contiene tres hamburguesas y una ya fue repuesta. Quedan dos unidades reclamables. Al solicitar tres, el sistema estaría atendiendo una unidad por segunda vez. El mismo producto sirve para comprobar tanto el cálculo como la decisión.
 
@@ -289,6 +305,10 @@ npm test -- --run tests/hu-04-registrar-reposicion.test.js -t CP-HU04-02
 Una variante para practicar consiste en cambiar las unidades devueltas de cero a uno. Antes de ejecutar, calcular cuántas quedan y escribir el nuevo resultado esperado. El estado del pedido entregado se comprueba por separado en `CP-HU04-01`.
 
 ### Ejemplo 5 · HU-14/CA01 y CA02 · Observar el cierre desde caja
+
+**Tipo de prueba:** Interfaz de cierre de sesión.  
+**Herramienta:** Playwright.  
+**Entorno:** Navegador local conectado a la aplicación del entorno académico, desde la carpeta de laboratorio.
 
 Se necesita la aplicación en el entorno académico y una cuenta de caja habilitada. La evidencia buscada es visible en dos momentos: el botón está disponible con la sesión abierta y, tras un clic, aparece el formulario de ingreso. Este recorrido cubre la pantalla de registro de pedidos. Para completar el CA01 se debe repetir en las demás pantallas protegidas y registrar cada resultado.
 
