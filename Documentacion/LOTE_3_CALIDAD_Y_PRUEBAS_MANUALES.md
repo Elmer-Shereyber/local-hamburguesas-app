@@ -14,6 +14,10 @@ Complementar las **252 pruebas funcionales automatizadas ya aprobadas** sin mezc
 | Regresión funcional | `npm run test:all` | Mantener las 252 pruebas previamente certificadas |
 | Integración continua | GitHub Actions | Ejecutar regresión y calidad en cada cambio |
 
+### Primera ejecución de accesibilidad
+
+Las 11 rutas fueron analizadas y la salida visible señaló `color-contrast` como patrón común. La paleta inicial usaba rojo `#EF4444` con texto blanco, relación 3.76:1, por debajo de WCAG AA 4.5:1 para texto normal. Se aplicaron variantes más oscuras a rojo, azul, verde y ámbar, y se programó una segunda ejecución para confirmar el resultado completo.
+
 ## Preparación local
 
 ```powershell
