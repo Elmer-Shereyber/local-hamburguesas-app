@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const estaDisponible = p.disponible !== false;
             const badgeDisp = estaDisponible
                 ? '<span class="badge" style="background:var(--success-color); font-size:0.75rem;">Disponible</span>'
-                : '<span class="badge" style="background:#EF4444; font-size:0.75rem;">No disponible</span>';
+                : '<span class="badge" style="background:var(--primary-color); font-size:0.75rem;">No disponible</span>';
 
             const botonesAccion = `
                 <div class="pedido-actions-group" style="justify-content:flex-end;">
