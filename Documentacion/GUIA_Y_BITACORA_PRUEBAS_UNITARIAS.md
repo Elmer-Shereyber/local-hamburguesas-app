@@ -666,10 +666,11 @@ Cada prueba añadida se registrará con esta información:
 | 15 | 23 E2E | 23 | 0 | Certificar el paquete final de casos límite |
 | 16 | 206 Vitest + 16 integración + 30 E2E | 252 | 0 | Cerrado |
 | 17 | 11 accesibilidad + 42 multinavegador | 53 | 0 | Iniciar verificaciones externas/manuales |
+| 18 | 2 de concurrencia preparadas | 0 | 0 | Ejecutar con Firebase Emulator en Windows |
 
 ## Próximo paso recomendado
 
-Ejecutar el lote 3 descrito en `Documentacion/LOTE_3_CALIDAD_Y_PRUEBAS_MANUALES.md`: primero accesibilidad en Chromium, después las 42 pruebas estáticas en tres motores y finalmente las verificaciones manuales controladas.
+Ejecutar `npm run test:concurrency`. Las pruebas externas que requieren correo real, enlace público o impresión se realizarán cuando el proyecto académico sea levantado; no bloquean las comprobaciones locales actuales.
 
 ## Historial de actualización
 
@@ -702,3 +703,4 @@ Ejecutar el lote 3 descrito en `Documentacion/LOTE_3_CALIDAD_Y_PRUEBAS_MANUALES.
 - **2026-11-27:** la sexta ejecución aprobó 29 E2E; la recuperación se adaptó a la limitación de revocación del Auth Emulator sin atribuirle el comportamiento del backend productivo.
 - **2026-11-27:** la séptima ejecución aprobó las 30 E2E; total funcional definitivo de 252 pruebas aprobadas y 0 fallidas.
 - **2026-11-27:** inició el lote 3 con cobertura final aprobada, accesibilidad, compatibilidad multinavegador, GitHub Actions y lista manual separada.
+- **2026-11-27:** accesibilidad aprobó 11 de 11 y la matriz multinavegador aprobó 42 de 42; se prepararon dos pruebas aisladas de concurrencia para correlativos e incidencias atómicas con Firebase Emulator.
