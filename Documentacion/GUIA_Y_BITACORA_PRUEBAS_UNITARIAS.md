@@ -621,6 +621,8 @@ Lines:      94.83 %
 
 Las suites de accesibilidad y compatibilidad quedaron preparadas para ejecutarse en Windows después de instalar los tres navegadores de Playwright. Sus resultados no se sumarán a 252 hasta ser ejecutados y aprobados.
 
+La primera auditoría de accesibilidad ejecutó las 11 rutas y detectó principalmente contraste insuficiente: el rojo `#EF4444` alcanzaba 3.76:1 frente al mínimo 4.5:1, además de variantes claras de azul, verde y ámbar. Se oscureció la paleta compartida y los textos de acción específicos sin cambiar la estructura ni las funciones del sistema. Queda pendiente repetir axe-core para descubrir cualquier observación que la consola hubiera truncado.
+
 ## Formato para documentar cada prueba
 
 Cada prueba añadida se registrará con esta información:
