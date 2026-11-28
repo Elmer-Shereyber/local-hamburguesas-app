@@ -41,7 +41,7 @@ Como el proyecto Firebase actual es académico y el despliegue se realizará má
 1. doce emisiones simultáneas deben producir los correlativos del 1 al 12, sin duplicados ni saltos;
 2. dos intentos simultáneos de registrar una reposición sobre el mismo pedido deben dejar exactamente una reposición completa y rechazar el segundo intento.
 
-La configuración fue validada con `playwright --list` y reconoció las dos pruebas. La ejecución visual completa queda pendiente en Windows, donde Chromium y los emuladores ya están instalados.
+La configuración fue validada con `playwright --list` y reconoció las dos pruebas. La ejecución del 27 de noviembre de 2026 en Windows aprobó **2 de 2 pruebas en 7.2 segundos**. Se obtuvieron doce correlativos únicos y consecutivos, y los dos intentos simultáneos de reposición dejaron una sola incidencia completa.
 
 ## Preparación local
 
@@ -64,7 +64,7 @@ Estas comprobaciones requieren un entorno controlado y evidencia humana. No debe
 | MAN-06 | Uso en dispositivo móvil real | Teléfono de pruebas | Capturas en orientación vertical | Pendiente |
 | MAN-07 | Desconexión y reconexión durante una operación | Proyecto Firebase de pruebas | Video o secuencia de capturas | Pendiente |
 | MAN-08 | Reglas equivalentes en Firebase desplegado | Proyecto aislado de pruebas | Registro de accesos permitidos/denegados | Pendiente |
-| MAN-09 | Correlativos con solicitudes concurrentes | Firebase Emulator | Lista sin duplicados | Automatizada; pendiente ejecutar |
+| MAN-09 | Correlativos con solicitudes concurrentes | Firebase Emulator | 2 pruebas aprobadas en 7.2 s | Aprobada |
 | MAN-10 | Volumen y tiempos de respuesta | Datos sintéticos | Tabla de tiempos y errores | Pendiente |
 
 ## Criterio de cierre
@@ -78,6 +78,6 @@ El lote se cierra cuando:
 
 ## Orden recomendado mientras no exista despliegue
 
-1. Ejecutar `npm run test:concurrency` y registrar el resultado.
-2. Mantener MAN-01, MAN-02, MAN-05 y MAN-08 pendientes hasta levantar el sistema.
-3. Continuar después con volumen, desconexión/reconexión y dispositivo móvil real.
+1. Mantener MAN-01, MAN-02 y MAN-08 pendientes hasta levantar el sistema.
+2. Continuar localmente con volumen y tiempos de respuesta (MAN-10).
+3. Probar desconexión/reconexión (MAN-07), impresión/PDF (MAN-05) y dispositivo móvil real (MAN-06).
