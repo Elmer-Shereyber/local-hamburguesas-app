@@ -584,6 +584,8 @@ npm audit:              0 vulnerabilidades
 
 El total previamente certificado se mantiene temporalmente en **244** hasta ejecutar las 30 E2E completas en Chromium sobre Windows. Si todas aprueban, el resultado final será **252 pruebas**: 206 de Vitest, 16 de integración y 30 E2E.
 
+La primera ejecución del paquete final aprobó las 206 pruebas de Vitest, las 16 de integración y las 14 E2E estáticas. La primera E2E funcional detectó que el botón de cierre de sesión se conectaba después de validar asincrónicamente el token y Firestore; un clic inmediato podía no ejecutarse. El evento se trasladó al inicio de `requireAuth`, quedando pendiente repetir las 30 E2E.
+
 ## Formato para documentar cada prueba
 
 Cada prueba añadida se registrará con esta información:
@@ -648,3 +650,4 @@ Ejecutar las tres suites completas en Windows y registrar el resultado final. De
 - **2026-11-27:** 22 E2E aprobadas; catálogo, disponibilidad en tiempo real y reportes administrativos elevaron el acumulado a 243 pruebas.
 - **2026-11-27:** 23 E2E aprobadas; la gestión segura de usuarios operativos elevó el acumulado certificado a 244 pruebas.
 - **2026-11-27:** paquete final preparado con 30 E2E, sesión única, recuperación completa, variantes de pago/comprobante/devolución y escrituras atómicas; certificación visual pendiente.
+- **2026-11-27:** la primera ejecución final detectó una carrera al conectar el botón de cierre de sesión; se corrigió sin alterar las reglas de negocio y quedó pendiente repetir Playwright.
