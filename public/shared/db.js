@@ -1,12 +1,12 @@
-import { db, firebaseConfig } from './firebase-config.js';
+import { db, firebaseConfig, usingFirebaseEmulators } from './firebase-config.js';
 import { normalizarTipo } from './utils.js';
 import { 
     collection, getDocs, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc,
-    query, where, orderBy, onSnapshot, serverTimestamp 
+    query, where, orderBy, onSnapshot, serverTimestamp, runTransaction, writeBatch
 } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+import { deleteApp, initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
 import { 
-    getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, updatePassword, deleteUser, signOut 
+    connectAuthEmulator, getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, deleteUser, signOut
 } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
 
 // Referencias a colecciones
@@ -15,6 +15,15 @@ const pedidosCol = collection(db, 'pedidos');
 const devolucionesCol = collection(db, 'devoluciones');
 const usuariosCol = collection(db, 'usuarios');
 const configDoc = doc(db, 'configuracion', 'negocio');
+
+function crearAuthSecundaria(prefijo) {
+    const secondaryApp = initializeApp(firebaseConfig, `${prefijo}_${Date.now()}_${Math.random()}`);
+    const secondaryAuth = getAuth(secondaryApp);
+    if (usingFirebaseEmulators) {
+        connectAuthEmulator(secondaryAuth, 'http://127.0.0.1:9099', { disableWarnings: true });
+    }
+    return { secondaryApp, secondaryAuth };
+}
 
 // ---------------------- PRODUCTOS ----------------------
 
@@ -110,11 +119,14 @@ export async function getConfiguracion() {
 }
 
 export async function incrementCorrelativo(tipo) {
-    const config = await getConfiguracion();
     const campo = tipo === 'Factura' ? 'correlativoFactura' : 'correlativoBoleta';
-    const nuevoValor = (config[campo] || 0) + 1;
-    await updateDoc(configDoc, { [campo]: nuevoValor });
-    return nuevoValor;
+    return runTransaction(db, async (transaccion) => {
+        const snap = await transaccion.get(configDoc);
+        if (!snap.exists()) throw new Error("No se encontró la configuración del negocio.");
+        const nuevoValor = (snap.data()[campo] || 0) + 1;
+        transaccion.update(configDoc, { [campo]: nuevoValor });
+        return nuevoValor;
+    });
 }
 
 /**
@@ -123,14 +135,20 @@ export async function incrementCorrelativo(tipo) {
  * Boleta -> BC01-XXXXXXXX
  */
 export async function incrementCorrelativoNotaCredito(tipoComprobanteModificado) {
-    const config = await getConfiguracion();
     const esFactura = tipoComprobanteModificado === 'Factura';
     const campo = esFactura ? 'correlativoNotaCreditoFactura' : 'correlativoNotaCreditoBoleta';
-    const nuevoValor = (config[campo] || 0) + 1;
-    await updateDoc(configDoc, { [campo]: nuevoValor });
     const serie = esFactura ? 'FC01' : 'BC01';
-    const numeroFormateado = `${serie}-${String(nuevoValor).padStart(8, '0')}`;
-    return { numero: nuevoValor, serie, numeroFormateado };
+    return runTransaction(db, async (transaccion) => {
+        const snap = await transaccion.get(configDoc);
+        if (!snap.exists()) throw new Error("No se encontró la configuración del negocio.");
+        const nuevoValor = (snap.data()[campo] || 0) + 1;
+        transaccion.update(configDoc, { [campo]: nuevoValor });
+        return {
+            numero: nuevoValor,
+            serie,
+            numeroFormateado: `${serie}-${String(nuevoValor).padStart(8, '0')}`
+        };
+    });
 }
 
 // ---------------------- PEDIDOS ----------------------
@@ -274,28 +292,30 @@ export async function registrarReposicion({ pedidoOriginal, productosReemplazo, 
         fechaRegistro: serverTimestamp()
     };
 
-    const repoDocRef = await addDoc(pedidosCol, nuevoPedido);
-
-    // 2. Actualizar el pedido original: marcar como 'Con reposición' e incrementar unidadesRepuestas
+    const repoDocRef = doc(pedidosCol);
     const pOriginalDoc = doc(db, 'pedidos', pedidoOriginal.id);
-    const productosActualizados = pedidoOriginal.productos.map(prod => {
-        const afectado = productosOriginalesAfectados.find(a => a.id === prod.id);
-        if (afectado) {
-            return {
+    await runTransaction(db, async (transaccion) => {
+        const originalSnap = await transaccion.get(pOriginalDoc);
+        if (!originalSnap.exists()) throw new Error("El pedido original ya no existe.");
+        const originalActual = originalSnap.data();
+        if (originalActual.tieneReposicion || originalActual.tieneDevolucion) {
+            throw new Error("El pedido ya tiene una incidencia registrada.");
+        }
+
+        const productosActualizados = (originalActual.productos || []).map(prod => {
+            const afectado = productosOriginalesAfectados.find(a => a.id === prod.id);
+            return afectado ? {
                 ...prod,
                 unidadesRepuestas: (prod.unidadesRepuestas || 0) + afectado.cantidad
-            };
-        }
-        return prod;
-    });
+            } : prod;
+        });
 
-    const reposicionesList = pedidoOriginal.reposicionesIds || [];
-    reposicionesList.push(repoDocRef.id);
-
-    await updateDoc(pOriginalDoc, {
-        tieneReposicion: true,
-        productos: productosActualizados,
-        reposicionesIds: reposicionesList
+        transaccion.set(repoDocRef, nuevoPedido);
+        transaccion.update(pOriginalDoc, {
+            tieneReposicion: true,
+            productos: productosActualizados,
+            reposicionesIds: [...(originalActual.reposicionesIds || []), repoDocRef.id]
+        });
     });
 
     return repoDocRef.id;
@@ -323,43 +343,43 @@ export async function solicitarDevolucion({ pedidoOriginal, productosAfectados, 
         fechaSolicitud: serverTimestamp()
     };
 
-    const devDocRef = await addDoc(devolucionesCol, nuevaSolicitud);
-
-    // 2. Actualizar el pedido activo: marcar como 'Devolución solicitada' e incrementar unidadesDevueltas
+    const devDocRef = doc(devolucionesCol);
     const pOriginalDoc = doc(db, 'pedidos', pedidoOriginal.id);
-    const productosActualizados = (pedidoOriginal.productos || []).map(prod => {
-        const afectado = productosAfectados.find(a => a.id === prod.id);
-        if (afectado) {
-            return {
+    const pOrigenDoc = pedidoOriginal.esReposicion && pedidoOriginal.pedidoOrigenId
+        ? doc(db, 'pedidos', pedidoOriginal.pedidoOrigenId)
+        : null;
+
+    await runTransaction(db, async (transaccion) => {
+        const pedidoSnap = await transaccion.get(pOriginalDoc);
+        if (!pedidoSnap.exists()) throw new Error("El pedido asociado ya no existe.");
+        const pedidoActual = pedidoSnap.data();
+        if (pOrigenDoc) {
+            const origenSnap = await transaccion.get(pOrigenDoc);
+            if (!origenSnap.exists()) throw new Error("El pedido raíz ya no existe.");
+        }
+
+        const productosActualizados = (pedidoActual.productos || []).map(prod => {
+            const afectado = productosAfectados.find(a => a.id === prod.id);
+            return afectado ? {
                 ...prod,
                 unidadesDevueltas: (prod.unidadesDevueltas || 0) + afectado.cantidad
-            };
-        }
-        return prod;
-    });
+            } : prod;
+        });
 
-    const devolucionesList = pedidoOriginal.devolucionesIds || [];
-    devolucionesList.push(devDocRef.id);
-
-    await updateDoc(pOriginalDoc, {
-        tieneDevolucion: true,
-        estadoDevolucion: 'Solicitada',
-        productos: productosActualizados,
-        devolucionesIds: devolucionesList
-    });
-
-    // 3. Si era una devolución sobre una reposición, cerrar el caso también en el pedido original raíz
-    if (pedidoOriginal.esReposicion && pedidoOriginal.pedidoOrigenId) {
-        try {
-            const pOrigenDoc = doc(db, 'pedidos', pedidoOriginal.pedidoOrigenId);
-            await updateDoc(pOrigenDoc, {
+        transaccion.set(devDocRef, nuevaSolicitud);
+        transaccion.update(pOriginalDoc, {
+            tieneDevolucion: true,
+            estadoDevolucion: 'Solicitada',
+            productos: productosActualizados,
+            devolucionesIds: [...(pedidoActual.devolucionesIds || []), devDocRef.id]
+        });
+        if (pOrigenDoc) {
+            transaccion.update(pOrigenDoc, {
                 tieneDevolucion: true,
                 estadoDevolucion: 'Solicitada'
             });
-        } catch (e) {
-            console.warn("No se pudo actualizar pedido origen:", e);
         }
-    }
+    });
 
     return devDocRef.id;
 }
@@ -403,7 +423,9 @@ export async function procesarDevolucion(devolucionId, { comprobanteArchivo, com
     // Modalidad efectiva real con la que se hizo el reembolso
     const modalidadEfectiva = modalidadReal || devolucion.modalidad || 'Transferencia';
 
-    // Obtener información del pedido original para la Nota de Crédito
+    // Obtener el comprobante fiscal que se modificará con la Nota de Crédito.
+    // Si el reclamo proviene de una reposición, el documento válido es la venta
+    // raíz: una reposición sin costo no constituye una segunda venta.
     let pedidoOriginal = null;
     let tipoComprobanteModificado = 'Boleta';
     let comprobanteModificadoNumero = devolucion.pedidoCodigo || 'S/N';
@@ -411,9 +433,10 @@ export async function procesarDevolucion(devolucionId, { comprobanteArchivo, com
     let datosCliente = null;
     let datosEmisor = null;
 
-    if (devolucion.pedidoId) {
+    const pedidoFiscalId = devolucion.pedidoOrigenId || devolucion.pedidoId;
+    if (pedidoFiscalId) {
         try {
-            pedidoOriginal = await getPedidoById(devolucion.pedidoId);
+            pedidoOriginal = await getPedidoById(pedidoFiscalId);
             tipoComprobanteModificado = pedidoOriginal.tipoComprobante === 'Factura' ? 'Factura' : 'Boleta';
             comprobanteModificadoNumero = pedidoOriginal.comprobante || pedidoOriginal.codigo || 'S/N';
             fechaComprobanteModificado = pedidoOriginal.fechaRegistro || null;
@@ -457,8 +480,9 @@ export async function procesarDevolucion(devolucionId, { comprobanteArchivo, com
     const codigoTipoNotaCredito = esDevolucionTotal ? '06' : '07';
     const descripcionTipoNotaCredito = esDevolucionTotal ? '06 - DEVOLUCIÓN TOTAL' : '07 - DEVOLUCIÓN POR ÍTEM';
 
-    // 1. Actualizar la solicitud en la colección 'devoluciones'
-    await updateDoc(devDoc, {
+    // La solicitud y los pedidos asociados se cierran en un único lote.
+    const lote = writeBatch(db);
+    lote.update(devDoc, {
         estado: 'Procesada',
         fechaProcesado: serverTimestamp(),
         comprobanteArchivo: comprobanteArchivo || null,
@@ -488,31 +512,23 @@ export async function procesarDevolucion(devolucionId, { comprobanteArchivo, com
         itemsDevueltos: devolucion.productos || []
     });
 
-    // 2. Actualizar el pedido directo asociado en 'pedidos'
     if (devolucion.pedidoId) {
-        try {
-            const pDoc = doc(db, 'pedidos', devolucion.pedidoId);
-            await updateDoc(pDoc, {
-                estadoDevolucion: 'Procesada',
-                notaCreditoNumero: numeroNotaCredito
-            });
-        } catch (e) {
-            console.warn("No se pudo actualizar estadoDevolucion en pedido:", e);
-        }
+        const pDoc = doc(db, 'pedidos', devolucion.pedidoId);
+        lote.update(pDoc, {
+            estadoDevolucion: 'Procesada',
+            notaCreditoNumero: numeroNotaCredito
+        });
     }
 
-    // 3. Si era una devolución sobre reposición, actualizar también el pedido origen raíz
     if (devolucion.pedidoOrigenId) {
-        try {
-            const pOrigenDoc = doc(db, 'pedidos', devolucion.pedidoOrigenId);
-            await updateDoc(pOrigenDoc, {
-                estadoDevolucion: 'Procesada',
-                notaCreditoNumero: numeroNotaCredito
-            });
-        } catch (e) {
-            console.warn("No se pudo actualizar estadoDevolucion en pedido origen:", e);
-        }
+        const pOrigenDoc = doc(db, 'pedidos', devolucion.pedidoOrigenId);
+        lote.update(pOrigenDoc, {
+            estadoDevolucion: 'Procesada',
+            notaCreditoNumero: numeroNotaCredito
+        });
     }
+
+    await lote.commit();
 
     return { devolucionId, numeroNotaCredito };
 }
@@ -639,35 +655,18 @@ export async function crearCuentaOperativa({ rol, usuario, password }) {
     const emailInterno = `${usuarioLimpio.toLowerCase()}@burger.local`;
 
     // Registrar en Firebase Authentication usando instancia secundaria (para no cerrar la sesión del admin)
+    const { secondaryApp, secondaryAuth } = crearAuthSecundaria('SecondaryAuthCreation');
     try {
-        const secondaryApp = initializeApp(firebaseConfig, "SecondaryAuthCreation_" + Date.now());
-        const secondaryAuth = getAuth(secondaryApp);
-
-        try {
-            await createUserWithEmailAndPassword(secondaryAuth, emailInterno, passwordLimpia);
-            await signOut(secondaryAuth);
-        } catch (authErr) {
-            if (authErr.code === 'auth/email-already-in-use') {
-                // Si la credencial ya existía en Auth (por ejemplo de un seed previo),
-                // actualizamos su contraseña iniciando sesión con la password o con el seed
-                try {
-                    const cred = await signInWithEmailAndPassword(secondaryAuth, emailInterno, passwordLimpia);
-                    await signOut(secondaryAuth);
-                } catch (loginErr) {
-                    try {
-                        const credSeed = await signInWithEmailAndPassword(secondaryAuth, emailInterno, '123456');
-                        await updatePassword(credSeed.user, passwordLimpia);
-                        await signOut(secondaryAuth);
-                    } catch (seedErr) {
-                        console.warn("Usuario ya existía en Auth:", authErr.message);
-                    }
-                }
-            } else {
-                throw authErr;
-            }
-        }
+        await createUserWithEmailAndPassword(secondaryAuth, emailInterno, passwordLimpia);
+        await signOut(secondaryAuth);
     } catch (e) {
-        console.error("Nota sobre aprovisionamiento en Firebase Auth:", e);
+        if (e.code === 'auth/email-already-in-use') {
+            throw new Error(`Ya existe una credencial de acceso para "${usuarioLimpio}".`);
+        }
+        throw new Error("No se pudo crear la credencial de acceso en Firebase Authentication.");
+    } finally {
+        await signOut(secondaryAuth).catch(() => {});
+        await deleteApp(secondaryApp).catch(() => {});
     }
 
     // Guardar en Firestore en la colección 'usuarios' con ID = rol (máximo 1 cuenta por rol)
@@ -676,7 +675,6 @@ export async function crearCuentaOperativa({ rol, usuario, password }) {
         usuario: usuarioLimpio,
         usuarioLower: usuarioLimpio.toLowerCase(),
         email: emailInterno,
-        password: passwordLimpia,
         fechaCreacion: serverTimestamp(),
         activo: true
     };
@@ -692,7 +690,7 @@ export async function crearCuentaOperativa({ rol, usuario, password }) {
  * • El rol queda inmediatamente disponible para crear una cuenta nueva (CA06).
  * • Los pedidos e incidencias previas conservan intacto su historial de operaciones (CA08).
  */
-export async function eliminarCuentaOperativa(rol) {
+export async function eliminarCuentaOperativa(rol, passwordActual) {
     const rolNorm = (rol || '').toLowerCase().trim();
     if (rolNorm !== 'cajera' && rolNorm !== 'cocina') {
         throw new Error("El rol especificado para eliminar no es válido.");
@@ -702,32 +700,21 @@ export async function eliminarCuentaOperativa(rol) {
     const snap = await getDoc(docRolRef);
     const datosUsuario = snap.exists() ? snap.data() : null;
 
-    // 1. Eliminar permanentemente la cuenta de Firebase Authentication
-    if (datosUsuario && datosUsuario.email) {
-        try {
-            const secondaryApp = initializeApp(firebaseConfig, "SecondaryAuthDeletion_" + Date.now());
-            const secondaryAuth = getAuth(secondaryApp);
-            
-            const pwd = datosUsuario.password || '123456';
-            try {
-                const cred = await signInWithEmailAndPassword(secondaryAuth, datosUsuario.email, pwd);
-                await deleteUser(cred.user);
-            } catch (loginErr) {
-                // Si la contraseña no coincidía, intentamos con '123456'
-                if (pwd !== '123456') {
-                    try {
-                        const credSeed = await signInWithEmailAndPassword(secondaryAuth, datosUsuario.email, '123456');
-                        await deleteUser(credSeed.user);
-                    } catch (seedErr) {
-                        console.warn("No se pudo iniciar sesión para eliminar en Auth:", seedErr.message);
-                    }
-                }
-            } finally {
-                await signOut(secondaryAuth).catch(() => {});
-            }
-        } catch (authErr) {
-            console.error("Nota sobre eliminación en Firebase Auth:", authErr);
-        }
+    const passwordLimpia = (passwordActual || '').trim();
+    if (!datosUsuario?.email) throw new Error("La cuenta operativa no existe.");
+    if (passwordLimpia.length < 6) throw new Error("Ingrese la contraseña actual de la cuenta para confirmar la eliminación.");
+
+    // 1. Validar la credencial de forma transitoria y eliminarla de Authentication.
+    // La contraseña nunca se guarda en Firestore.
+    const { secondaryApp, secondaryAuth } = crearAuthSecundaria('SecondaryAuthDeletion');
+    try {
+        const cred = await signInWithEmailAndPassword(secondaryAuth, datosUsuario.email, passwordLimpia);
+        await deleteUser(cred.user);
+    } catch (authErr) {
+        throw new Error("La contraseña de la cuenta operativa no es correcta.");
+    } finally {
+        await signOut(secondaryAuth).catch(() => {});
+        await deleteApp(secondaryApp).catch(() => {});
     }
 
     // 2. Eliminar el documento activo en Firestore

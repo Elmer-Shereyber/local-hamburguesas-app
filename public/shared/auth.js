@@ -5,11 +5,12 @@ import {
     onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
 import { 
-    doc, getDoc, getDocs, collection, query, where, onSnapshot 
+    doc, getDoc, getDocFromServer, getDocs, setDoc, deleteDoc, collection, query, where, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
 // Dominio interno para cajera y cocina (HU-10 CA05, HU-13 CA03)
 export const INTERNAL_DOMAIN = '@burger.local';
+let cierreEnCurso = false;
 
 /**
  * Determina el rol del usuario basado en su email y sesión activa
@@ -87,6 +88,15 @@ export async function login(identifier, password) {
         }
     }
 
+    // CA09: una sola sesión activa por cuenta. Un nuevo acceso reemplaza el
+    // token registrado y el listener del dispositivo anterior lo desconecta.
+    const tokenSesion = crypto.randomUUID();
+    await setDoc(doc(db, 'sesiones', userCredential.user.uid), {
+        token: tokenSesion,
+        email: userCredential.user.email,
+        actualizadoEn: Date.now()
+    });
+    sessionStorage.setItem('sessionToken', tokenSesion);
     sessionStorage.setItem('currentUserRole', role);
     sessionStorage.setItem('currentUsername', usuarioLimpio || identifier.split('@')[0]);
     return { user: userCredential.user, role };
@@ -97,6 +107,16 @@ export async function login(identifier, password) {
  */
 export async function logout() {
     try {
+        cierreEnCurso = true;
+        const user = auth.currentUser;
+        const tokenLocal = sessionStorage.getItem('sessionToken');
+        if (user && tokenLocal) {
+            const sesionRef = doc(db, 'sesiones', user.uid);
+            const sesionSnap = await getDoc(sesionRef).catch(() => null);
+            if (sesionSnap?.exists() && sesionSnap.data().token === tokenLocal) {
+                await deleteDoc(sesionRef).catch(() => {});
+            }
+        }
         sessionStorage.clear();
         await signOut(auth);
         window.location.href = '../login/index.html';
@@ -112,14 +132,73 @@ export async function logout() {
  * @param {string|string[]} allowedRole (ej. 'cajera', 'cocina', 'admin')
  */
 export function requireAuth(allowedRole) {
+    let paginaActiva = true;
+    window.addEventListener('pagehide', () => {
+        paginaActiva = false;
+    }, { once: true });
+
+    // El botón debe responder desde que el DOM invoca requireAuth. Las
+    // validaciones de token y Firestore son asíncronas y no deben retrasar la
+    // posibilidad de cerrar sesión.
+    const logoutBtn = document.getElementById('btn-logout');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', logout);
+    }
+
     onAuthStateChanged(auth, async (user) => {
+        if (!paginaActiva) return;
         if (!user) {
             // No autenticado
             window.location.href = '../login/index.html';
             return;
         }
 
+        // Fuerza la renovación para detectar contraseñas restablecidas o
+        // credenciales revocadas antes de permitir una pantalla protegida.
+        try {
+            await user.getIdToken(true);
+        } catch {
+            if (!paginaActiva) return;
+            sessionStorage.clear();
+            await signOut(auth).catch(() => {});
+            window.location.href = '../login/index.html';
+            return;
+        }
+        if (!paginaActiva) return;
+
         let currentRole = getUserRole(user.email);
+        const tokenLocal = sessionStorage.getItem('sessionToken');
+        const sesionRef = doc(db, 'sesiones', user.uid);
+
+        if (!tokenLocal) {
+            sessionStorage.clear();
+            await signOut(auth);
+            window.location.href = '../login/index.html';
+            return;
+        }
+
+        // Confirmar primero contra el servidor. Al navegar rápidamente entre
+        // pantallas, un listener puede emitir un snapshot vacío desde caché
+        // antes de recibir el documento real y no debe cerrar una sesión válida.
+        const sesionConfirmada = await getDocFromServer(sesionRef).catch(() => null);
+        if (!paginaActiva) return;
+        if (!sesionConfirmada?.exists() || sesionConfirmada.data().token !== tokenLocal) {
+            sessionStorage.clear();
+            await signOut(auth).catch(() => {});
+            window.location.href = '../login/index.html';
+            return;
+        }
+
+        onSnapshot(sesionRef, { includeMetadataChanges: true }, async (snap) => {
+            if (!paginaActiva) return;
+            if (snap.metadata.fromCache) return;
+            if (!cierreEnCurso && (!snap.exists() || snap.data().token !== tokenLocal)) {
+                alert("Se inició sesión con esta cuenta en otro dispositivo. Esta sesión ha finalizado.");
+                sessionStorage.clear();
+                await signOut(auth).catch(() => {});
+                if (paginaActiva) window.location.href = '../login/index.html';
+            }
+        });
         
         // Si no se dedujo el rol de inmediato pero es dominio interno, resolver desde Firestore
         if (user.email.toLowerCase().endsWith(INTERNAL_DOMAIN) && (!currentRole || currentRole === 'admin')) {
@@ -144,19 +223,19 @@ export function requireAuth(allowedRole) {
                 // Si el documento no existe o pertenece a otro usuario creado posteriormente
                 if (!uSnap.exists() || (uSnap.data().email && uSnap.data().email.toLowerCase() !== user.email.toLowerCase())) {
                     // La cuenta fue eliminada o reemplazada por el administrador -> cierre forzado de sesión (HU-10 CA07)
+                    alert("Tu cuenta ha sido eliminada por el Administrador. La sesión ha finalizado.");
                     sessionStorage.clear();
                     await signOut(auth);
-                    alert("Tu cuenta ha sido eliminada por el Administrador. La sesión ha finalizado.");
-                    window.location.href = '../login/index.html';
+                    if (paginaActiva) window.location.href = '../login/index.html';
                     return;
                 }
 
                 // Suscripción en tiempo real: si el admin elimina o recrea la cuenta mientras está activa en pantalla
                 onSnapshot(uDocRef, (snap) => {
-                    if (!snap.exists() || (snap.data().email && snap.data().email.toLowerCase() !== user.email.toLowerCase())) {
+                    if (paginaActiva && (!snap.exists() || (snap.data().email && snap.data().email.toLowerCase() !== user.email.toLowerCase()))) {
+                        alert("Tu cuenta ha sido eliminada por el Administrador. La sesión ha finalizado.");
                         sessionStorage.clear();
                         signOut(auth);
-                        alert("Tu cuenta ha sido eliminada por el Administrador. La sesión ha finalizado.");
                         window.location.href = '../login/index.html';
                     }
                 });
@@ -173,19 +252,18 @@ export function requireAuth(allowedRole) {
             userSpan.textContent = cachedName || user.email.split('@')[0];
         }
 
-        // Configurar botón de logout
-        const logoutBtn = document.getElementById('btn-logout');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', logout);
-        }
-
         // Si la ruta requiere un rol específico y no coincide, redirigir
         if (allowedRole) {
             const allowed = Array.isArray(allowedRole) ? allowedRole.includes(currentRole) : currentRole === allowedRole;
             if (!allowed) {
                 redirectToRoleHome(currentRole);
+                return;
             }
         }
+
+        // Señal estable para pruebas E2E y para cualquier inicialización que
+        // necesite saber que autenticación, sesión y rol ya fueron validados.
+        document.documentElement.dataset.authReady = 'true';
     });
 }
 
