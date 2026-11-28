@@ -6,6 +6,7 @@ async function iniciarSesion(page, identificador, password, rutaEsperada) {
   await page.locator('#password').fill(password);
   await page.locator('#login-form [type="submit"]').click();
   await expect(page).toHaveURL(new RegExp(`${rutaEsperada.replaceAll('/', '\\/')}(?:\\?.*)?$`), { timeout: 20000 });
+  await expect(page.locator('html')).toHaveAttribute('data-auth-ready', 'true', { timeout: 20000 });
 }
 
 async function establecerBorrador(page, borrador) {
