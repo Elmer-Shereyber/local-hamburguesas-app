@@ -666,11 +666,11 @@ Cada prueba añadida se registrará con esta información:
 | 15 | 23 E2E | 23 | 0 | Certificar el paquete final de casos límite |
 | 16 | 206 Vitest + 16 integración + 30 E2E | 252 | 0 | Cerrado |
 | 17 | 11 accesibilidad + 42 multinavegador | 53 | 0 | Iniciar verificaciones externas/manuales |
-| 18 | 2 de concurrencia preparadas | 0 | 0 | Ejecutar con Firebase Emulator en Windows |
+| 18 | 2 de concurrencia | 2 | 0 | Continuar con volumen y resiliencia |
 
 ## Próximo paso recomendado
 
-Ejecutar `npm run test:concurrency`. Las pruebas externas que requieren correo real, enlace público o impresión se realizarán cuando el proyecto académico sea levantado; no bloquean las comprobaciones locales actuales.
+Preparar las pruebas locales de volumen y tiempos de respuesta. Las pruebas externas que requieren correo real, enlace público o reglas desplegadas se realizarán cuando el proyecto académico sea levantado; no bloquean las comprobaciones locales actuales.
 
 ## Historial de actualización
 
@@ -704,3 +704,4 @@ Ejecutar `npm run test:concurrency`. Las pruebas externas que requieren correo r
 - **2026-11-27:** la séptima ejecución aprobó las 30 E2E; total funcional definitivo de 252 pruebas aprobadas y 0 fallidas.
 - **2026-11-27:** inició el lote 3 con cobertura final aprobada, accesibilidad, compatibilidad multinavegador, GitHub Actions y lista manual separada.
 - **2026-11-27:** accesibilidad aprobó 11 de 11 y la matriz multinavegador aprobó 42 de 42; se prepararon dos pruebas aisladas de concurrencia para correlativos e incidencias atómicas con Firebase Emulator.
+- **2026-11-27:** concurrencia aprobó 2 de 2 en 7.2 segundos: doce correlativos únicos y consecutivos, y una sola reposición confirmada ante dos solicitudes simultáneas.
