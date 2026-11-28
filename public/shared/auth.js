@@ -5,7 +5,7 @@ import {
     onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
 import { 
-    doc, getDoc, getDocs, setDoc, deleteDoc, collection, query, where, onSnapshot
+    doc, getDoc, getDocFromServer, getDocs, setDoc, deleteDoc, collection, query, where, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
 // Dominio interno para cajera y cocina (HU-10 CA05, HU-13 CA03)
@@ -169,7 +169,19 @@ export function requireAuth(allowedRole) {
             return;
         }
 
-        onSnapshot(sesionRef, async (snap) => {
+        // Confirmar primero contra el servidor. Al navegar rápidamente entre
+        // pantallas, un listener puede emitir un snapshot vacío desde caché
+        // antes de recibir el documento real y no debe cerrar una sesión válida.
+        const sesionConfirmada = await getDocFromServer(sesionRef).catch(() => null);
+        if (!sesionConfirmada?.exists() || sesionConfirmada.data().token !== tokenLocal) {
+            sessionStorage.clear();
+            await signOut(auth).catch(() => {});
+            window.location.href = '../login/index.html';
+            return;
+        }
+
+        onSnapshot(sesionRef, { includeMetadataChanges: true }, async (snap) => {
+            if (snap.metadata.fromCache) return;
             if (!cierreEnCurso && (!snap.exists() || snap.data().token !== tokenLocal)) {
                 sessionStorage.clear();
                 await signOut(auth).catch(() => {});
