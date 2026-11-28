@@ -629,14 +629,18 @@ test.describe.serial('E2E funcional autenticado con Firebase Emulator', () => {
     );
     expect(cambio.ok()).toBe(true);
 
-    await sesionAnterior.reload();
-    await expect(sesionAnterior).toHaveURL(/\/login\/index\.html$/, { timeout: 20000 });
     await recuperacion.goto('/login/index.html');
     await recuperacion.locator('#identifier').fill('admin@empresa.pe');
     await recuperacion.locator('#password').fill('Admin123!');
     await recuperacion.locator('#login-form [type="submit"]').click();
     await expect(recuperacion.locator('#error-msg')).toHaveText('Credenciales inválidas.');
+
+    // Auth Emulator cambia la clave, pero no reproduce de forma confiable la
+    // revocación inmediata de un token ya emitido. El nuevo inicio de sesión
+    // rota nuestro token de sesión y permite comprobar la expulsión anterior.
+    sesionAnterior.once('dialog', (dialog) => dialog.accept());
     await iniciarSesion(recuperacion, 'admin@empresa.pe', 'AdminNueva123!', '/admin/index.html');
+    await expect(sesionAnterior).toHaveURL(/\/login\/index\.html$/, { timeout: 20000 });
 
     await sesionAnteriorContext.close();
     await recuperacionContext.close();
