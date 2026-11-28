@@ -1,24 +1,20 @@
-# Casos de prueba unitarios derivados de los CA de las 15 HU
+# Informe de pruebas unitarias de las 15 historias de usuario
 
-## Propósito
+## Objetivo
 
-Este documento sigue el formato solicitado en clase: código, título, prioridad, puntos, descripción, criterios de aceptación, casos, datos de prueba y resultado esperado. La suite contiene únicamente pruebas unitarias derivadas de los CA; no incluye E2E, accesibilidad, multinavegador, concurrencia ni servicios externos.
+Comprobar las reglas de negocio asociadas con los criterios de aceptación de pedidos, comprobantes, incidencias, cocina, administración y acceso.
 
-## Resultado certificado
+## Alcance
 
-- 15 historias de usuario.
-- 153 criterios de aceptación revisados.
-- 88 casos unitarios automatizados.
-- 15 archivos de prueba.
-- 88 aprobados y 0 fallidos.
+Vitest ejecutó las funciones de la aplicación con datos controlados. Cada ficha conserva los criterios de su historia y detalla qué verificó cada caso. En los criterios que también describen pantallas, persistencia o servicios externos, el resultado se limita a las aserciones del archivo enlazado.
 
-Comando: `npm test -- --run`.
+## Resumen de ejecución
 
-## Clasificación de los criterios
+| Historias | Archivos | Casos ejecutados | Aprobados | Fallidos | Porcentaje aprobado |
+|---:|---:|---:|---:|---:|---:|
+| 15 | 15 | 88 | 88 | 0 | 100 % |
 
-- **Prueba unitaria:** el CA contiene una regla que puede comprobarse llamando una función aislada con entradas y salidas controladas.
-- **Requiere interfaz/integración:** el CA depende del DOM, navegación, Firebase, tiempo real, archivos o servicios externos. Se documenta, pero no se presenta falsamente como prueba unitaria.
-
+**Estado final: suite de pruebas unitarias aprobada.** Ejecución con Vitest 5.1.2 mediante `npm test -- --run`. Los 153 criterios documentados sirven de referencia. El porcentaje se calcula sobre los 88 casos ejecutados.
 
 ## HU-01: Registrar pedido
 
@@ -48,35 +44,22 @@ Como cajera, quiero registrar un pedido con los productos, cantidades y modalida
 | CA09 | **Registro completo:** el pedido solo se registra cuando todos los campos obligatorios están completos. | Prueba unitaria |
 | CA10 | **Resultado del registro:** al registrarse, el pedido queda con su total y modalidad de pago definidos, listo para emitir su comprobante (ver HU-02). El pedido aún no es visible para el área de cocina. | Prueba unitaria |
 
-### Casos de prueba
+### Resultados de pruebas
 
-| Caso | Datos de prueba | Resultado esperado |
-|---|---|---|
-| **CP-HU01-01:** permite disponibles y rechaza no disponibles | Producto con `disponible=true` y otro con `false` | Permite el primero y rechaza el segundo |
-| **CP-HU01-02:** rechaza un pedido sin productos | Arreglo de productos vacío | Devuelve `SIN_PRODUCTOS` |
-| **CP-HU01-03:** acepta cantidades 1 y 10, pero rechaza 0 y 11 | Cantidades 1, 10, 0 y 11 | Acepta 1 y 10; rechaza 0 y 11 |
-| **CP-HU01-04:** acepta detalle opcional hasta 300 caracteres | Detalle vacío, 300 y 301 caracteres | Acepta hasta 300 y rechaza 301 |
-| **CP-HU01-05:** calcula precio por cantidad y redondea | 2 × S/15 y 1 × S/4.505 | Total redondeado de S/34.51 |
-| **CP-HU01-06:** acepta solo las cinco modalidades definidas | Efectivo, Yape, Plin, Transferencia, Híbrido y Tarjeta | Acepta las cinco modalidades definidas y rechaza Tarjeta |
-| **CP-HU01-07:** exige dos medios y suma híbrida exacta | Total S/15; combinaciones 10+5, 15 y 10+4 | Solo acepta dos medios cuya suma sea exacta |
-| **CP-HU01-08:** registra la modalidad declarada sin verificación externa | Pedido pagado con Yape | El borrador conserva la modalidad declarada |
-| **CP-HU01-09:** rechaza campos obligatorios incompletos | Producto válido y modalidad vacía | Devuelve `MODALIDAD_INVALIDA` |
-| **CP-HU01-10:** crea el borrador con total, pago y estado inicial | Dos hamburguesas a S/15, Efectivo | Borrador total S/30, pago Efectivo y estado Pendiente |
+[Ver las pruebas de esta historia](../tests/hu-01-registrar-pedido.test.js)
 
-### Trazabilidad de la automatización
-
-| ID | CA relacionado | Tipo de caso | Archivo automatizado | Estado |
-|---|---|---|---|---|
-| CP-HU01-01 | CA01 | Válido e inválido | `tests/hu-01-registrar-pedido.test.js` | Aprobada |
-| CP-HU01-02 | CA02 | Inválido | `tests/hu-01-registrar-pedido.test.js` | Aprobada |
-| CP-HU01-03 | CA03 | Válido e inválido | `tests/hu-01-registrar-pedido.test.js` | Aprobada |
-| CP-HU01-04 | CA04 | Válido e inválido | `tests/hu-01-registrar-pedido.test.js` | Aprobada |
-| CP-HU01-05 | CA05 | Válido | `tests/hu-01-registrar-pedido.test.js` | Aprobada |
-| CP-HU01-06 | CA06 | Válido e inválido | `tests/hu-01-registrar-pedido.test.js` | Aprobada |
-| CP-HU01-07 | CA07 | Válido | `tests/hu-01-registrar-pedido.test.js` | Aprobada |
-| CP-HU01-08 | CA08 | Válido | `tests/hu-01-registrar-pedido.test.js` | Aprobada |
-| CP-HU01-09 | CA09 | Inválido | `tests/hu-01-registrar-pedido.test.js` | Aprobada |
-| CP-HU01-10 | CA10 | Válido | `tests/hu-01-registrar-pedido.test.js` | Aprobada |
+| ID / CA | Caso de prueba | Descripción y datos de prueba | Resultado esperado | Resultado obtenido | Estado |
+|---|---|---|---|---|---|
+| CP-HU01-01 / CA01 | permite disponibles y rechaza no disponibles | Producto con `disponible=true` y otro con `false` | Permite el primero y rechaza el segundo | Disponible → sí; no disponible → no. | Aprobada |
+| CP-HU01-02 / CA02 | rechaza un pedido sin productos | Arreglo de productos vacío | Devuelve `SIN_PRODUCTOS` | `SIN_PRODUCTOS` | Aprobada |
+| CP-HU01-03 / CA03 | acepta cantidades 1 y 10, pero rechaza 0 y 11 | Cantidades 1, 10, 0 y 11 | Acepta 1 y 10; rechaza 0 y 11 | 1 y 10 → `true`; 0 y 11 → `false`. | Aprobada |
+| CP-HU01-04 / CA04 | acepta detalle opcional hasta 300 caracteres | Detalle vacío, 300 y 301 caracteres | Acepta hasta 300 y rechaza 301 | Vacío y 300 → `true`; 301 → `false`. | Aprobada |
+| CP-HU01-05 / CA05 | calcula precio por cantidad y redondea | 2 × S/15 y 1 × S/4.505 | Total redondeado de S/34.51 | S/ 34.51 | Aprobada |
+| CP-HU01-06 / CA06 | acepta solo las cinco modalidades definidas | Efectivo, Yape, Plin, Transferencia, Híbrido y Tarjeta | Acepta las cinco modalidades definidas y rechaza Tarjeta | Las cinco modalidades dieron `true`; Tarjeta dio `false`. | Aprobada |
+| CP-HU01-07 / CA07 | exige dos medios y suma híbrida exacta | Total S/15; combinaciones 10+5, 15 y 10+4 | Solo acepta dos medios cuya suma sea exacta | 10 + 5 → válido; 15 solo y 10 + 4 → inválidos. | Aprobada |
+| CP-HU01-08 / CA08 | registra la modalidad declarada sin verificación externa | Pedido pagado con Yape | El borrador conserva la modalidad declarada | `modalidadPago = Yape` | Aprobada |
+| CP-HU01-09 / CA09 | rechaza campos obligatorios incompletos | Producto válido y modalidad vacía | Devuelve `MODALIDAD_INVALIDA` | `valido = false` y `MODALIDAD_INVALIDA` | Aprobada |
+| CP-HU01-10 / CA10 | crea el borrador con total, pago y estado inicial | Dos hamburguesas a S/15, Efectivo | Borrador total S/30, pago Efectivo y estado Pendiente | S/ 30, Efectivo y Pendiente; dos unidades de p1. | Aprobada |
 
 ## HU-02: Emitir comprobante de pago
 
@@ -110,35 +93,22 @@ Como cajera, quiero emitir la boleta o factura de un pedido ya registrado, valid
 | CA13 | **Datos mínimos comunes:** todo comprobante incluye datos del emisor, serie y correlativo, fecha de emisión, detalle de productos con cantidad y precio, importe total y modalidad de pago registrada en HU-01. | Requiere interfaz/integración |
 | CA14 | **Habilitación para cocina:** al emitirse el comprobante, el pedido pasa a estado *Pendiente* y se hace visible en la pantalla de cocina (ver HU-03). | Requiere interfaz/integración |
 
-### Casos de prueba
+### Resultados de pruebas
 
-| Caso | Datos de prueba | Resultado esperado |
-|---|---|---|
-| **CP-HU02-01:** acepta exactamente boleta o factura | Boleta, Factura y Ticket | Acepta Boleta/Factura y rechaza Ticket |
-| **CP-HU02-02:** valida las dos variantes de boleta | Boleta simple y boleta con DNI válido | Ambas variantes resultan válidas |
-| **CP-HU02-03:** aplican el límite exacto de S/ 700 | Totales S/700 y S/700.01 | Permite boleta simple solo hasta S/700 |
-| **CP-HU02-04:** acepta DNI de ocho dígitos y rechaza formatos inválidos | DNI 12345678, 1234567 y 1234567A | Acepta exactamente ocho dígitos |
-| **CP-HU02-05:** exige DNI y nombre validados | DNI 123 y nombre vacío | Reporta DNI y nombre no validados |
-| **CP-HU02-06:** crea una boleta simple sin datos del cliente | Boleta simple de S/20 | Los datos del cliente son nulos |
-| **CP-HU02-07:** acepta RUC de once dígitos y empresa activa y habida | RUC de 11/10 dígitos y estados ACTIVO/BAJA | Valida longitud y condición ACTIVO-HABIDO |
-| **CP-HU02-08:** exige datos completos del comprador | Factura con razón social y domicilio vacíos | Rechaza ambos datos faltantes |
-| **CP-HU02-09:** calcula valor de venta e IGV del 18 por ciento | Total S/118 | Valor venta S/100 e IGV S/18 |
-| **CP-HU02-10:** genera serie y correlativo automático | Serie B001 y correlativo 25 | Genera B001-000025 |
+[Ver las pruebas de esta historia](../tests/hu-02-emitir-comprobante.test.js)
 
-### Trazabilidad de la automatización
-
-| ID | CA relacionado | Tipo de caso | Archivo automatizado | Estado |
-|---|---|---|---|---|
-| CP-HU02-01 | CA03 | Válido e inválido | `tests/hu-02-emitir-comprobante.test.js` | Aprobada |
-| CP-HU02-02 | CA04 | Válido | `tests/hu-02-emitir-comprobante.test.js` | Aprobada |
-| CP-HU02-03 | CA05 y CA06 | Límite | `tests/hu-02-emitir-comprobante.test.js` | Aprobada |
-| CP-HU02-04 | CA07 | Válido e inválido | `tests/hu-02-emitir-comprobante.test.js` | Aprobada |
-| CP-HU02-05 | CA07 | Válido | `tests/hu-02-emitir-comprobante.test.js` | Aprobada |
-| CP-HU02-06 | CA05 | Válido | `tests/hu-02-emitir-comprobante.test.js` | Aprobada |
-| CP-HU02-07 | CA09 | Válido | `tests/hu-02-emitir-comprobante.test.js` | Aprobada |
-| CP-HU02-08 | CA09 | Inválido | `tests/hu-02-emitir-comprobante.test.js` | Aprobada |
-| CP-HU02-09 | CA10 | Válido | `tests/hu-02-emitir-comprobante.test.js` | Aprobada |
-| CP-HU02-10 | CA12 | Válido | `tests/hu-02-emitir-comprobante.test.js` | Aprobada |
+| ID / CA | Caso de prueba | Descripción y datos de prueba | Resultado esperado | Resultado obtenido | Estado |
+|---|---|---|---|---|---|
+| CP-HU02-01 / CA03 | acepta exactamente boleta o factura | Boleta, Factura y Ticket | Acepta Boleta/Factura y rechaza Ticket | `true`, `true`, `false` | Aprobada |
+| CP-HU02-02 / CA04 | valida las dos variantes de boleta | Boleta simple y boleta con DNI válido | Ambas variantes resultan válidas | Ambas validaciones devolvieron `true`. | Aprobada |
+| CP-HU02-03 / CA05 y CA06 | aplican el límite exacto de S/ 700 | Totales S/700 y S/700.01 | Permite boleta simple solo hasta S/700 | S/ 700 → `true`; S/ 700.01 → `false`. | Aprobada |
+| CP-HU02-04 / CA07 | acepta DNI de ocho dígitos y rechaza formatos inválidos | DNI 12345678, 1234567 y 1234567A | Acepta exactamente ocho dígitos | Solo `12345678` dio `true`. | Aprobada |
+| CP-HU02-05 / CA07 | exige DNI y nombre validados | DNI 123 y nombre vacío | Reporta DNI y nombre no validados | `DNI_INVALIDO` y `NOMBRE_NO_VALIDADO` | Aprobada |
+| CP-HU02-06 / CA05 | crea una boleta simple sin datos del cliente | Boleta simple de S/20 | Los datos del cliente son nulos | `null` | Aprobada |
+| CP-HU02-07 / CA09 | acepta RUC de once dígitos y empresa activa y habida | RUC de 11/10 dígitos y estados ACTIVO/BAJA | Valida longitud y condición ACTIVO-HABIDO | 11 dígitos y ACTIVO/HABIDO aceptados; 10 dígitos y BAJA rechazados. | Aprobada |
+| CP-HU02-08 / CA09 | exige datos completos del comprador | Factura con razón social y domicilio vacíos | Rechaza ambos datos faltantes | `RAZON_SOCIAL_NO_VALIDADA` y `DOMICILIO_NO_VALIDADO` | Aprobada |
+| CP-HU02-09 / CA10 | calcula valor de venta e IGV del 18 por ciento | Total S/118 | Valor venta S/100 e IGV S/18 | Base 100, IGV 18, total 118. | Aprobada |
+| CP-HU02-10 / CA12 | genera serie y correlativo automático | Serie B001 y correlativo 25 | Genera B001-000025 | `B001-000025` | Aprobada |
 
 ## HU-03: Consultar pedidos
 
@@ -173,35 +143,22 @@ Como cajera, quiero consultar los pedidos del día y ver el estado general de ca
 | CA14 | **Consulta únicamente:** el registro de devoluciones y reposiciones se define en historias de usuario aparte. | Requiere interfaz/integración |
 | CA15 | **Cierre de la incidencia:** cada pedido original admite una única solución inicial (reposición o devolución). Si la reposición entregada no satisface al cliente, se permite solicitar una devolución vinculada que cierra el caso; no se encadenan reposiciones. | Prueba unitaria |
 
-### Casos de prueba
+### Resultados de pruebas
 
-| Caso | Datos de prueba | Resultado esperado |
-|---|---|---|
-| **CP-HU03-01:** devuelve como máximo los diez pedidos más recientes | Doce pedidos con fechas ascendentes | Devuelve los diez más recientes en orden descendente |
-| **CP-HU03-02:** filtra por comprobante o código | Comprobantes B001/F001 y códigos A01/A02 | Filtra por comprobante o código |
-| **CP-HU03-03:** distingue pedidos del día actual | Fecha del mismo día y del día anterior | Solo identifica como actual la primera |
-| **CP-HU03-04:** calcula los estados generales | Productos Pendiente, En preparación y Listo | Calcula Pendiente, En preparación o Listo |
-| **CP-HU03-05:** solo permiten entregar un pedido listo | Pedidos Listo y En preparación | Solo habilita entrega para Listo |
-| **CP-HU03-06:** prioriza el indicador de devolución procesada | Pedido procesado y pedido con reposición | Prioriza Devolución procesada y muestra Con reposición |
-| **CP-HU03-07:** solo habilita incidencias en pedidos entregados | Pedidos Listo y Entregado | Solo el Entregado habilita incidencias |
-| **CP-HU03-08:** impide una segunda reposición | Reposición entregada | Solo permite devolución |
-| **CP-HU03-09:** conserva el estado entregado al mostrar una incidencia | Pedido Entregado con reposición | Muestra indicador sin modificar Entregado |
-| **CP-HU03-10:** cierra las acciones después de una solución inicial | Pedido con devolución o reposición previa | No ofrece una segunda solución inicial |
+[Ver las pruebas de esta historia](../tests/hu-03-consultar-pedidos.test.js)
 
-### Trazabilidad de la automatización
-
-| ID | CA relacionado | Tipo de caso | Archivo automatizado | Estado |
-|---|---|---|---|---|
-| CP-HU03-01 | CA01 | Válido | `tests/hu-03-consultar-pedidos.test.js` | Aprobada |
-| CP-HU03-02 | CA02 | Válido | `tests/hu-03-consultar-pedidos.test.js` | Aprobada |
-| CP-HU03-03 | CA03 | Válido | `tests/hu-03-consultar-pedidos.test.js` | Aprobada |
-| CP-HU03-04 | CA05 | Válido | `tests/hu-03-consultar-pedidos.test.js` | Aprobada |
-| CP-HU03-05 | CA06 y CA08 | Límite | `tests/hu-03-consultar-pedidos.test.js` | Aprobada |
-| CP-HU03-06 | CA10 | Válido | `tests/hu-03-consultar-pedidos.test.js` | Aprobada |
-| CP-HU03-07 | CA11 | Límite | `tests/hu-03-consultar-pedidos.test.js` | Aprobada |
-| CP-HU03-08 | CA11 | Límite | `tests/hu-03-consultar-pedidos.test.js` | Aprobada |
-| CP-HU03-09 | CA12 | Límite | `tests/hu-03-consultar-pedidos.test.js` | Aprobada |
-| CP-HU03-10 | CA15 | Inválido | `tests/hu-03-consultar-pedidos.test.js` | Aprobada |
+| ID / CA | Caso de prueba | Descripción y datos de prueba | Resultado esperado | Resultado obtenido | Estado |
+|---|---|---|---|---|---|
+| CP-HU03-01 / CA01 | devuelve como máximo los diez pedidos más recientes | Doce pedidos con fechas ascendentes | Devuelve los diez más recientes en orden descendente | 10 pedidos; primero el ID 11. | Aprobada |
+| CP-HU03-02 / CA02 | filtra por comprobante o código | Comprobantes B001/F001 y códigos A01/A02 | Filtra por comprobante o código | F001 devolvió A02; #A01 devolvió A01. | Aprobada |
+| CP-HU03-03 / CA03 | distingue pedidos del día actual | Fecha del mismo día y del día anterior | Solo identifica como actual la primera | Mismo día → `true`; día anterior → `false`. | Aprobada |
+| CP-HU03-04 / CA05 | calcula los estados generales | Productos Pendiente, En preparación y Listo | Calcula Pendiente, En preparación o Listo | Pendiente, En preparación y Listo, respectivamente. | Aprobada |
+| CP-HU03-05 / CA06 y CA08 | solo permiten entregar un pedido listo | Pedidos Listo y En preparación | Solo habilita entrega para Listo | Listo → `true`; En preparación → `false`. | Aprobada |
+| CP-HU03-06 / CA10 | prioriza el indicador de devolución procesada | Pedido procesado y pedido con reposición | Prioriza Devolución procesada y muestra Con reposición | «Devolución procesada» y «Con reposición». | Aprobada |
+| CP-HU03-07 / CA11 | solo habilita incidencias en pedidos entregados | Pedidos Listo y Entregado | Solo el Entregado habilita incidencias | Listo → lista vacía; Entregado → reposición y devolución. | Aprobada |
+| CP-HU03-08 / CA11 | impide una segunda reposición | Reposición entregada | Solo permite devolución | Una acción permitida: devolución. | Aprobada |
+| CP-HU03-09 / CA12 | conserva el estado entregado al mostrar una incidencia | Pedido Entregado con reposición | Muestra indicador sin modificar Entregado | Indicador «Con reposición»; el objeto conservó Entregado. | Aprobada |
+| CP-HU03-10 / CA15 | cierra las acciones después de una solución inicial | Pedido con devolución o reposición previa | No ofrece una segunda solución inicial | Ambas consultas devolvieron listas vacías. | Aprobada |
 
 ## HU-04: Registrar reposición
 
@@ -232,29 +189,19 @@ Como cajera, quiero registrar la reposición de uno o más productos de un pedid
 | CA10 | **Solo reemplazos:** el pedido de reposición contiene únicamente los productos de reemplazo. Productos adicionales se registran como un pedido nuevo e independiente. | Requiere interfaz/integración |
 | CA11 | **Sin segunda reposición:** no puede registrarse una nueva reposición sobre un pedido de reposición. Si el cliente no queda conforme después de recibirla, solo puede solicitar una devolución vinculada para cerrar el caso. | Requiere interfaz/integración |
 
-### Casos de prueba
+### Resultados de pruebas
 
-| Caso | Datos de prueba | Resultado esperado |
-|---|---|---|
-| **CP-HU04-01:** exige pedido entregado | Pedidos Entregado y Listo | Solo permite incidencia sobre Entregado |
-| **CP-HU04-02:** descuenta unidades ya atendidas | 3 unidades, 1 repuesta; reclamos de 2 y 3 | Quedan 2 reclamables; acepta 2 y rechaza 3 |
-| **CP-HU04-03:** valida motivo fijo y observación para Otro | Motivo fijo; Otro con observación larga/corta | Valida lista y mínimo de 10 caracteres para Otro |
-| **CP-HU04-04:** limita la observación a 250 caracteres | Observaciones de 250 y 251 caracteres | Acepta 250 y rechaza 251 |
-| **CP-HU04-05:** permite únicamente el mismo producto disponible | Mismo producto disponible y producto distinto | Solo permite el mismo producto |
-| **CP-HU04-06:** rechaza el producto original no disponible | Mismo producto con `disponible=false` | Rechaza la reposición |
-| **CP-HU04-07:** rechaza una cantidad de reposición igual a cero | Cantidades 1 y 0 sobre unidades disponibles | Acepta 1 y rechaza 0 |
+[Ver las pruebas de esta historia](../tests/hu-04-registrar-reposicion.test.js)
 
-### Trazabilidad de la automatización
-
-| ID | CA relacionado | Tipo de caso | Archivo automatizado | Estado |
-|---|---|---|---|---|
-| CP-HU04-01 | CA01 | Límite | `tests/hu-04-registrar-reposicion.test.js` | Aprobada |
-| CP-HU04-02 | CA01 | Válido e inválido | `tests/hu-04-registrar-reposicion.test.js` | Aprobada |
-| CP-HU04-03 | CA02 | Válido | `tests/hu-04-registrar-reposicion.test.js` | Aprobada |
-| CP-HU04-04 | CA02 | Válido e inválido | `tests/hu-04-registrar-reposicion.test.js` | Aprobada |
-| CP-HU04-05 | CA03 | Válido | `tests/hu-04-registrar-reposicion.test.js` | Aprobada |
-| CP-HU04-06 | CA04 | Inválido | `tests/hu-04-registrar-reposicion.test.js` | Aprobada |
-| CP-HU04-07 | CA01 | Válido e inválido | `tests/hu-04-registrar-reposicion.test.js` | Aprobada |
+| ID / CA | Caso de prueba | Descripción y datos de prueba | Resultado esperado | Resultado obtenido | Estado |
+|---|---|---|---|---|---|
+| CP-HU04-01 / CA01 | exige pedido entregado | Pedidos Entregado y Listo | Solo permite incidencia sobre Entregado | Entregado → `true`; Listo → `false`. | Aprobada |
+| CP-HU04-02 / CA01 | descuenta unidades ya atendidas | 3 unidades, 1 repuesta; reclamos de 2 y 3 | Quedan 2 reclamables; acepta 2 y rechaza 3 | 2 reclamables; se aceptaron 2 y se rechazaron 3. | Aprobada |
+| CP-HU04-03 / CA02 | valida motivo fijo y observación para Otro | Motivo fijo; Otro con observación larga/corta | Valida lista y mínimo de 10 caracteres para Otro | Motivo fijo y Otro con detalle suficiente aceptados; «Corto» rechazado. | Aprobada |
+| CP-HU04-04 / CA02 | limita la observación a 250 caracteres | Observaciones de 250 y 251 caracteres | Acepta 250 y rechaza 251 | 250 → `true`; 251 → `false`. | Aprobada |
+| CP-HU04-05 / CA03 | permite únicamente el mismo producto disponible | Mismo producto disponible y producto distinto | Solo permite el mismo producto | Mismo ID → `true`; producto distinto → `false`. | Aprobada |
+| CP-HU04-06 / CA04 | rechaza el producto original no disponible | Mismo producto con `disponible=false` | Rechaza la reposición | `false` | Aprobada |
+| CP-HU04-07 / CA01 | rechaza una cantidad de reposición igual a cero | Cantidades 1 y 0 sobre unidades disponibles | Acepta 1 y rechaza 0 | 1 → `true`; 0 → `false`. | Aprobada |
 
 ## HU-05: Solicitar devolución
 
@@ -284,29 +231,19 @@ Como cajera, quiero registrar la solicitud de devolución de uno o más producto
 | CA09 | **Visible para el administrador:** la solicitud queda disponible para ser procesada en la historia *Procesar devolución*. | Requiere interfaz/integración |
 | CA10 | **Devolución posterior a reposición:** puede solicitarse sobre un pedido de reposición ya entregado. El monto se toma de los productos pagados en el pedido original vinculado, pues la reposición tuvo costo S/ 0.00; esta devolución cierra el caso. | Requiere interfaz/integración |
 
-### Casos de prueba
+### Resultados de pruebas
 
-| Caso | Datos de prueba | Resultado esperado |
-|---|---|---|
-| **CP-HU05-01:** limita la cantidad a las unidades reclamables | 2 unidades, 1 ya repuesta; reclamos 1 y 2 | Acepta 1 y rechaza 2 |
-| **CP-HU05-02:** calcula automáticamente el monto | 2 × S/15 y 1 × S/5 | Calcula S/35 |
-| **CP-HU05-03:** rechaza modalidades distintas de Yape, Plin o Transferencia | Modalidad Efectivo | La rechaza como destino de devolución |
-| **CP-HU05-04:** valida teléfono de billetera | Teléfonos 987654321 y 887654321 | Acepta celular peruano que inicia en 9 |
-| **CP-HU05-05:** valida cuenta o CCI para transferencia | Cuenta de 10 dígitos, CCI de 20 y cuenta de 3 | Acepta cuenta/CCI válidos y rechaza formato corto |
-| **CP-HU05-06:** exige datos de contacto completos | Contacto sin nombre y teléfono 123 | Reporta `CONTACTO_INVALIDO` |
-| **CP-HU05-07:** acepta una solicitud completa | Pedido entregado, producto, motivo, Yape y contacto válidos | Solicitud válida sin errores |
+[Ver las pruebas de esta historia](../tests/hu-05-solicitar-devolucion.test.js)
 
-### Trazabilidad de la automatización
-
-| ID | CA relacionado | Tipo de caso | Archivo automatizado | Estado |
-|---|---|---|---|---|
-| CP-HU05-01 | CA01 | Válido e inválido | `tests/hu-05-solicitar-devolucion.test.js` | Aprobada |
-| CP-HU05-02 | CA03 | Válido | `tests/hu-05-solicitar-devolucion.test.js` | Aprobada |
-| CP-HU05-03 | CA04 | Inválido | `tests/hu-05-solicitar-devolucion.test.js` | Aprobada |
-| CP-HU05-04 | CA05 | Válido | `tests/hu-05-solicitar-devolucion.test.js` | Aprobada |
-| CP-HU05-05 | CA05 | Válido e inválido | `tests/hu-05-solicitar-devolucion.test.js` | Aprobada |
-| CP-HU05-06 | CA06 | Válido | `tests/hu-05-solicitar-devolucion.test.js` | Aprobada |
-| CP-HU05-07 | CA07 | Límite | `tests/hu-05-solicitar-devolucion.test.js` | Aprobada |
+| ID / CA | Caso de prueba | Descripción y datos de prueba | Resultado esperado | Resultado obtenido | Estado |
+|---|---|---|---|---|---|
+| CP-HU05-01 / CA01 | limita la cantidad a las unidades reclamables | 2 unidades, 1 ya repuesta; reclamos 1 y 2 | Acepta 1 y rechaza 2 | 1 aceptada; 2 rechazadas. | Aprobada |
+| CP-HU05-02 / CA03 | calcula automáticamente el monto | 2 × S/15 y 1 × S/5 | Calcula S/35 | S/ 35 | Aprobada |
+| CP-HU05-03 / CA04 | rechaza modalidades distintas de Yape, Plin o Transferencia | Modalidad Efectivo | La rechaza como destino de devolución | Efectivo → `false`. | Aprobada |
+| CP-HU05-04 / CA05 | valida teléfono de billetera | Teléfonos 987654321 y 887654321 | Acepta celular peruano que inicia en 9 | 987654321 válido para Yape; 887654321 inválido. | Aprobada |
+| CP-HU05-05 / CA05 | valida cuenta o CCI para transferencia | Cuenta de 10 dígitos, CCI de 20 y cuenta de 3 | Acepta cuenta/CCI válidos y rechaza formato corto | Cuenta de 10 y CCI de 20 aceptados; cuenta de 3 rechazada. | Aprobada |
+| CP-HU05-06 / CA06 | exige datos de contacto completos | Contacto sin nombre y teléfono 123 | Reporta `CONTACTO_INVALIDO` | `CONTACTO_INVALIDO` | Aprobada |
+| CP-HU05-07 / CA07 | acepta una solicitud completa | Pedido entregado, producto, motivo, Yape y contacto válidos | Solicitud válida sin errores | `valido = true`, lista de errores vacía. | Aprobada |
 
 ## HU-06: Procesar devolución
 
@@ -337,27 +274,18 @@ Como administrador, quiero ver las solicitudes de devolución pendientes y regis
 | CA10 | **No reversible:** una vez marcada como *Procesada*, no puede volver a *Solicitada* ni anularse. | Prueba unitaria |
 | CA11 | **Emisión de Nota de Crédito Electrónica (SUNAT):** al registrar el reembolso, el sistema genera automáticamente la Nota de Crédito Electrónica asociada al comprobante original (serie BC01 para boletas o FC01 para facturas), clasificada según el Catálogo N.° 09 de SUNAT en *06 - Devolución total* o *07 - Devolución por ítem (parcial)*. El documento desglosa ítems devueltos, valor venta, 18% de IGV e importe total, incluye la leyenda académica "Documento de demostración – sin validez tributaria", y queda disponible para su visualización e impresión oficial en PDF. | Prueba unitaria |
 
-### Casos de prueba
+### Resultados de pruebas
 
-| Caso | Datos de prueba | Resultado esperado |
-|---|---|---|
-| **CP-HU06-01:** acepta comprobante adjunto y destino válido | Solicitud, voucher.pdf y destino Yape válido | Procesamiento válido |
-| **CP-HU06-02:** rechaza procesamiento sin comprobante | Solicitud sin archivo | Reporta `COMPROBANTE_OBLIGATORIO` |
-| **CP-HU06-03:** valida el destino corregido | Transferencia con cuenta 123 | Reporta `DESTINO_INVALIDO` |
-| **CP-HU06-04:** impide reprocesar una devolución | Estado Procesada con voucher | Reporta `YA_PROCESADA` |
-| **CP-HU06-05:** clasifica devolución total con código 06 | Pedido S/30 y devolución S/30 | Nota de crédito código 06 total |
-| **CP-HU06-06:** clasifica devolución parcial con código 07 | Pedido S/30 y devolución S/15 | Nota de crédito código 07 parcial |
+[Ver las pruebas de esta historia](../tests/hu-06-procesar-devolucion.test.js)
 
-### Trazabilidad de la automatización
-
-| ID | CA relacionado | Tipo de caso | Archivo automatizado | Estado |
-|---|---|---|---|---|
-| CP-HU06-01 | CA03 | Válido | `tests/hu-06-procesar-devolucion.test.js` | Aprobada |
-| CP-HU06-02 | CA04 | Inválido | `tests/hu-06-procesar-devolucion.test.js` | Aprobada |
-| CP-HU06-03 | CA07 | Válido | `tests/hu-06-procesar-devolucion.test.js` | Aprobada |
-| CP-HU06-04 | CA10 | Inválido | `tests/hu-06-procesar-devolucion.test.js` | Aprobada |
-| CP-HU06-05 | CA11 | Válido | `tests/hu-06-procesar-devolucion.test.js` | Aprobada |
-| CP-HU06-06 | CA11 | Válido | `tests/hu-06-procesar-devolucion.test.js` | Aprobada |
+| ID / CA | Caso de prueba | Descripción y datos de prueba | Resultado esperado | Resultado obtenido | Estado |
+|---|---|---|---|---|---|
+| CP-HU06-01 / CA03 | acepta comprobante adjunto y destino válido | Solicitud, voucher.pdf y destino Yape válido | Procesamiento válido | `valido = true`, lista de errores vacía. | Aprobada |
+| CP-HU06-02 / CA04 | rechaza procesamiento sin comprobante | Solicitud sin archivo | Reporta `COMPROBANTE_OBLIGATORIO` | `COMPROBANTE_OBLIGATORIO` | Aprobada |
+| CP-HU06-03 / CA07 | valida el destino corregido | Transferencia con cuenta 123 | Reporta `DESTINO_INVALIDO` | `DESTINO_INVALIDO` | Aprobada |
+| CP-HU06-04 / CA10 | impide reprocesar una devolución | Estado Procesada con voucher | Reporta `YA_PROCESADA` | `YA_PROCESADA` | Aprobada |
+| CP-HU06-05 / CA11 | clasifica devolución total con código 06 | Pedido S/30 y devolución S/30 | Nota de crédito código 06 total | `codigo = 06`, `esTotal = true` | Aprobada |
+| CP-HU06-06 / CA11 | clasifica devolución parcial con código 07 | Pedido S/30 y devolución S/15 | Nota de crédito código 07 parcial | `codigo = 07`, `esTotal = false` | Aprobada |
 
 ## HU-07: Gestionar disponibilidad de productos
 
@@ -385,19 +313,14 @@ Como área de cocina, quiero marcar cada producto del menú como disponible o no
 | CA07 | **Solo área de cocina:** únicamente el rol de cocina cambia la disponibilidad. La cajera y el administrador solo la consultan; crear o eliminar productos del catálogo corresponde al administrador, en otra historia. | Requiere interfaz/integración |
 | CA08 | **Todos los productos visibles:** el listado no se filtra ni se pagina; cocina ve todos los productos a la vez. | Requiere interfaz/integración |
 
-### Casos de prueba
+### Resultados de pruebas
 
-| Caso | Datos de prueba | Resultado esperado |
-|---|---|---|
-| **CP-HU07-01:** alterna de disponible a no disponible | Producto disponible | Devuelve una copia no disponible |
-| **CP-HU07-02:** cambia el estado sin modificar el objeto original | Objeto original disponible | No muta el objeto original |
+[Ver las pruebas de esta historia](../tests/hu-07-disponibilidad.test.js)
 
-### Trazabilidad de la automatización
-
-| ID | CA relacionado | Tipo de caso | Archivo automatizado | Estado |
-|---|---|---|---|---|
-| CP-HU07-01 | CA02 | Válido | `tests/hu-07-disponibilidad.test.js` | Aprobada |
-| CP-HU07-02 | CA02 | Válido | `tests/hu-07-disponibilidad.test.js` | Aprobada |
+| ID / CA | Caso de prueba | Descripción y datos de prueba | Resultado esperado | Resultado obtenido | Estado |
+|---|---|---|---|---|---|
+| CP-HU07-01 / CA02 | alterna de disponible a no disponible | Producto disponible | Devuelve una copia no disponible | p1 pasó a `disponible = false` en la copia. | Aprobada |
+| CP-HU07-02 / CA02 | cambia el estado sin modificar el objeto original | Objeto original disponible | No muta el objeto original | El original conservó `true`; la función devolvió otro objeto. | Aprobada |
 
 ## HU-08: Visualizar pedidos en cocina
 
@@ -426,21 +349,15 @@ Como área de cocina, quiero ver los pedidos en curso con sus productos y cantid
 | CA08 | **Solo lectura de datos del pedido:** desde esta historia, cocina solo visualiza los pedidos; el cambio de estado de los productos se define en otra historia. | Requiere interfaz/integración |
 | CA09 | **Sin historial:** no se muestran pedidos entregados ni de días anteriores. | Requiere interfaz/integración |
 
-### Casos de prueba
+### Resultados de pruebas
 
-| Caso | Datos de prueba | Resultado esperado |
-|---|---|---|
-| **CP-HU08-01:** muestra pendientes, en preparación y listos, no entregados | Estados Pendiente, En preparación, Listo y Entregado | Muestra los tres primeros y oculta Entregado |
-| **CP-HU08-02:** prioriza en preparación, reposición y pendiente | Pedido normal, reposición y pedido en preparación | Ordena en preparación, reposición y normal |
-| **CP-HU08-03:** conserva el orden de los pedidos en preparación | Dos pedidos en preparación con distintas horas y reposición nueva | Conserva el orden de toma antes de la reposición |
+[Ver las pruebas de esta historia](../tests/hu-08-pedidos-cocina.test.js)
 
-### Trazabilidad de la automatización
-
-| ID | CA relacionado | Tipo de caso | Archivo automatizado | Estado |
-|---|---|---|---|---|
-| CP-HU08-01 | CA01 | Límite | `tests/hu-08-pedidos-cocina.test.js` | Aprobada |
-| CP-HU08-02 | CA03 | Válido | `tests/hu-08-pedidos-cocina.test.js` | Aprobada |
-| CP-HU08-03 | CA04 | Válido | `tests/hu-08-pedidos-cocina.test.js` | Aprobada |
+| ID / CA | Caso de prueba | Descripción y datos de prueba | Resultado esperado | Resultado obtenido | Estado |
+|---|---|---|---|---|---|
+| CP-HU08-01 / CA01 | muestra pendientes, en preparación y listos, no entregados | Estados Pendiente, En preparación, Listo y Entregado | Muestra los tres primeros y oculta Entregado | `true`, `true`, `true`, `false` | Aprobada |
+| CP-HU08-02 / CA03 | prioriza en preparación, reposición y pendiente | Pedido normal, reposición y pedido en preparación | Ordena en preparación, reposición y normal | curso → repo → normal | Aprobada |
+| CP-HU08-03 / CA04 | conserva el orden de los pedidos en preparación | Dos pedidos en preparación con distintas horas y reposición nueva | Conserva el orden de toma antes de la reposición | primero → segundo → repo | Aprobada |
 
 ## HU-09: Actualizar estado de productos
 
@@ -471,27 +388,18 @@ Como área de cocina, quiero actualizar el estado de cada producto dentro de un 
 | CA10 | **Solo pedidos visibles en cocina:** cocina solo puede cambiar estados de pedidos en *Pendiente*, *En preparación* o *Listo*. Un pedido *Entregado* ya no aparece en su pantalla y no puede modificarse. | Requiere interfaz/integración |
 | CA11 | **Sin confirmación de entrega:** cocina no puede marcar un pedido como *Entregado*; esa acción es exclusiva de la cajera, una vez que el pedido está *Listo*. | Requiere interfaz/integración |
 
-### Casos de prueba
+### Resultados de pruebas
 
-| Caso | Datos de prueba | Resultado esperado |
-|---|---|---|
-| **CP-HU09-01:** aplica ciclo completo a productos con preparación | Producto Con preparación en Pendiente y En preparación | Avanza secuencialmente a En preparación y Listo |
-| **CP-HU09-02:** envía servicios inmediatos directamente a Listo | Servicio inmediato Pendiente | Avanza directamente a Listo |
-| **CP-HU09-03:** impide saltar o retroceder estados | Producto Listo | No obtiene siguiente estado ni puede avanzar |
-| **CP-HU09-04:** habilita acción general solo al inicio | Preparados todos Pendientes y uno ya iniciado | Solo habilita la acción al inicio |
-| **CP-HU09-05:** inicia preparados sin afectar servicios inmediatos | Preparado Pendiente y servicio inmediato Pendiente | Solo cambia el preparado y recalcula En preparación |
-| **CP-HU09-06:** mantiene un producto listo sin retroceso | Servicio inmediato Listo | No permite retroceso |
+[Ver las pruebas de esta historia](../tests/hu-09-estado-productos.test.js)
 
-### Trazabilidad de la automatización
-
-| ID | CA relacionado | Tipo de caso | Archivo automatizado | Estado |
-|---|---|---|---|---|
-| CP-HU09-01 | CA01 | Válido | `tests/hu-09-estado-productos.test.js` | Aprobada |
-| CP-HU09-02 | CA01 | Válido | `tests/hu-09-estado-productos.test.js` | Aprobada |
-| CP-HU09-03 | CA02 | Inválido | `tests/hu-09-estado-productos.test.js` | Aprobada |
-| CP-HU09-04 | CA04 | Válido | `tests/hu-09-estado-productos.test.js` | Aprobada |
-| CP-HU09-05 | CA04 | Válido | `tests/hu-09-estado-productos.test.js` | Aprobada |
-| CP-HU09-06 | CA09 | Inválido | `tests/hu-09-estado-productos.test.js` | Aprobada |
+| ID / CA | Caso de prueba | Descripción y datos de prueba | Resultado esperado | Resultado obtenido | Estado |
+|---|---|---|---|---|---|
+| CP-HU09-01 / CA01 | aplica ciclo completo a productos con preparación | Producto Con preparación en Pendiente y En preparación | Avanza secuencialmente a En preparación y Listo | Pendiente → En preparación; En preparación → Listo. | Aprobada |
+| CP-HU09-02 / CA01 | envía servicios inmediatos directamente a Listo | Servicio inmediato Pendiente | Avanza directamente a Listo | Pendiente → Listo. | Aprobada |
+| CP-HU09-03 / CA02 | impide saltar o retroceder estados | Producto Listo | No obtiene siguiente estado ni puede avanzar | Siguiente estado `null`; avanzar lanzó una excepción. | Aprobada |
+| CP-HU09-04 / CA04 | habilita acción general solo al inicio | Preparados todos Pendientes y uno ya iniciado | Solo habilita la acción al inicio | Todos pendientes → `true`; uno iniciado → `false`. | Aprobada |
+| CP-HU09-05 / CA04 | inicia preparados sin afectar servicios inmediatos | Preparado Pendiente y servicio inmediato Pendiente | Solo cambia el preparado y recalcula En preparación | Estados individuales En preparación y Pendiente; estado general En preparación. | Aprobada |
+| CP-HU09-06 / CA09 | mantiene un producto listo sin retroceso | Servicio inmediato Listo | No permite retroceso | Siguiente estado `null`. | Aprobada |
 
 ## HU-10: Gestionar usuarios
 
@@ -520,27 +428,18 @@ Como administrador, quiero crear y eliminar las cuentas de cajera y de cocina, p
 | CA08 | **Historial intacto:** eliminar o recrear una cuenta no elimina ni modifica los pedidos, reposiciones o devoluciones ya registrados. Esos registros conservan el nombre de usuario que los generó, como un dato de texto, sin depender de que la cuenta siga existiendo. Si el nombre de usuario se reutiliza, los registros antiguos y nuevos mostrarán el mismo texto, sin distinguir que se trató de personas distintas. | Requiere interfaz/integración |
 | CA09 | **Sin recuperación propia:** cajera y cocina no tienen recuperación de contraseña; si la olvidan, el administrador elimina su cuenta y crea una nueva. | Prueba unitaria |
 
-### Casos de prueba
+### Resultados de pruebas
 
-| Caso | Datos de prueba | Resultado esperado |
-|---|---|---|
-| **CP-HU10-01:** permite como máximo una cuenta por rol | Sin usuarios, cajera existente y rol admin | Permite rol libre; bloquea duplicado y admin |
-| **CP-HU10-02:** acepta usuarios de 4 a 20 caracteres alfanuméricos | Usuarios de 4 y 20 caracteres | Ambos son válidos |
-| **CP-HU10-03:** rechaza longitud, espacios y caracteres especiales | Usuario de 3, con espacio y con símbolo | Rechaza los tres |
-| **CP-HU10-04:** exige contraseña mínima de seis caracteres | Contraseñas de 6 y 5 caracteres | Acepta 6 y rechaza 5 |
-| **CP-HU10-05:** genera el correo corporativo | Usuario Cajera1 | Genera cajera1@burger.local |
-| **CP-HU10-06:** rechaza recuperación propia para usuario operativo | Usuario cocina1 | No permite recuperación propia |
+[Ver las pruebas de esta historia](../tests/hu-10-gestionar-usuarios.test.js)
 
-### Trazabilidad de la automatización
-
-| ID | CA relacionado | Tipo de caso | Archivo automatizado | Estado |
-|---|---|---|---|---|
-| CP-HU10-01 | CA01 | Válido e inválido | `tests/hu-10-gestionar-usuarios.test.js` | Aprobada |
-| CP-HU10-02 | CA03 | Límite | `tests/hu-10-gestionar-usuarios.test.js` | Aprobada |
-| CP-HU10-03 | CA03 | Inválido | `tests/hu-10-gestionar-usuarios.test.js` | Aprobada |
-| CP-HU10-04 | CA03 | Válido e inválido | `tests/hu-10-gestionar-usuarios.test.js` | Aprobada |
-| CP-HU10-05 | CA05 | Válido | `tests/hu-10-gestionar-usuarios.test.js` | Aprobada |
-| CP-HU10-06 | CA09 | Inválido | `tests/hu-10-gestionar-usuarios.test.js` | Aprobada |
+| ID / CA | Caso de prueba | Descripción y datos de prueba | Resultado esperado | Resultado obtenido | Estado |
+|---|---|---|---|---|---|
+| CP-HU10-01 / CA01 | permite como máximo una cuenta por rol | Sin usuarios, cajera existente y rol admin | Permite rol libre; bloquea duplicado y admin | Cajera libre → `true`; cajera ocupada y admin → `false`. | Aprobada |
+| CP-HU10-02 / CA03 | acepta usuarios de 4 a 20 caracteres alfanuméricos | Usuarios de 4 y 20 caracteres | Ambos son válidos | 4 y 20 caracteres → `true`. | Aprobada |
+| CP-HU10-03 / CA03 | rechaza longitud, espacios y caracteres especiales | Usuario de 3, con espacio y con símbolo | Rechaza los tres | Los tres identificadores dieron `false`. | Aprobada |
+| CP-HU10-04 / CA03 | exige contraseña mínima de seis caracteres | Contraseñas de 6 y 5 caracteres | Acepta 6 y rechaza 5 | 6 → `true`; 5 → `false`. | Aprobada |
+| CP-HU10-05 / CA05 | genera el correo corporativo | Usuario Cajera1 | Genera cajera1@burger.local | `cajera1@burger.local` | Aprobada |
+| CP-HU10-06 / CA09 | rechaza recuperación propia para usuario operativo | Usuario cocina1 | No permite recuperación propia | `false` para cocina1. | Aprobada |
 
 ## HU-11: Gestionar productos
 
@@ -569,25 +468,17 @@ Como administrador, quiero crear, modificar y eliminar los productos del menú, 
 | CA08 | **Historial intacto:** eliminar un producto no elimina ni modifica los pedidos ya registrados que lo incluyen. | Requiere interfaz/integración |
 | CA09 | **Reportes por identificador:** los reportes de ventas por producto agrupan por el identificador interno, no por el nombre, de modo que un producto renombrado sigue contándose como uno solo. | Requiere interfaz/integración |
 
-### Casos de prueba
+### Resultados de pruebas
 
-| Caso | Datos de prueba | Resultado esperado |
-|---|---|---|
-| **CP-HU11-01:** acepta nombre, precio positivo y tipo permitido | Hamburguesa, S/15, Con preparación | Producto válido |
-| **CP-HU11-02:** rechaza precio no positivo y tipo desconocido | Precio 0 y tipo Otro | Reporta precio y tipo inválidos |
-| **CP-HU11-03:** detecta nombres duplicados sin distinguir espacios o mayúsculas | Nombre existente con mayúsculas y espacios distintos | Detecta nombre duplicado |
-| **CP-HU11-04:** permite editar el mismo producto | Edición del mismo ID con nuevo precio | No se considera duplicado de sí mismo |
-| **CP-HU11-05:** solo admite los dos tipos definidos | Servicio inmediato e Inventario | Acepta el tipo definido y rechaza el desconocido |
+[Ver las pruebas de esta historia](../tests/hu-11-gestionar-productos.test.js)
 
-### Trazabilidad de la automatización
-
-| ID | CA relacionado | Tipo de caso | Archivo automatizado | Estado |
-|---|---|---|---|---|
-| CP-HU11-01 | CA01 | Válido | `tests/hu-11-gestionar-productos.test.js` | Aprobada |
-| CP-HU11-02 | CA01 | Inválido | `tests/hu-11-gestionar-productos.test.js` | Aprobada |
-| CP-HU11-03 | CA02 | Válido | `tests/hu-11-gestionar-productos.test.js` | Aprobada |
-| CP-HU11-04 | CA04 | Válido | `tests/hu-11-gestionar-productos.test.js` | Aprobada |
-| CP-HU11-05 | CA05 | Válido e inválido | `tests/hu-11-gestionar-productos.test.js` | Aprobada |
+| ID / CA | Caso de prueba | Descripción y datos de prueba | Resultado esperado | Resultado obtenido | Estado |
+|---|---|---|---|---|---|
+| CP-HU11-01 / CA01 | acepta nombre, precio positivo y tipo permitido | Hamburguesa, S/15, Con preparación | Producto válido | `valido = true`, lista de errores vacía. | Aprobada |
+| CP-HU11-02 / CA01 | rechaza precio no positivo y tipo desconocido | Precio 0 y tipo Otro | Reporta precio y tipo inválidos | `PRECIO_INVALIDO` y `TIPO_INVALIDO` | Aprobada |
+| CP-HU11-03 / CA02 | detecta nombres duplicados sin distinguir espacios o mayúsculas | Nombre existente con mayúsculas y espacios distintos | Detecta nombre duplicado | `NOMBRE_DUPLICADO`; nombre normalizado «hamburguesa royal». | Aprobada |
+| CP-HU11-04 / CA04 | permite editar el mismo producto | Edición del mismo ID con nuevo precio | No se considera duplicado de sí mismo | `valido = true` para el mismo ID. | Aprobada |
+| CP-HU11-05 / CA05 | solo admite los dos tipos definidos | Servicio inmediato e Inventario | Acepta el tipo definido y rechaza el desconocido | Servicio inmediato → `true`; Inventario → `false`. | Aprobada |
 
 ## HU-12: Consultar ganancias e incidencias
 
@@ -621,23 +512,16 @@ Como administrador, quiero consultar las ganancias del negocio en un rango de fe
 | CA13 | **Solo administrador:** únicamente el rol administrador accede a este módulo. | Requiere interfaz/integración |
 | CA14 | **Sin exportación:** el sistema no ofrece exportar esta información a otros formatos; toda la consulta se realiza dentro del sistema. | Requiere interfaz/integración |
 
-### Casos de prueba
+### Resultados de pruebas
 
-| Caso | Datos de prueba | Resultado esperado |
-|---|---|---|
-| **CP-HU12-01:** valida rangos cronológicos | Rango 01–27 y rango 27–01 | Acepta el cronológico y rechaza el invertido |
-| **CP-HU12-02:** calcula ventas y modalidades, excluyendo el costo de reposición | Venta Efectivo S/30, híbrida S/20 y reposición S/0 | Ventas S/50 y desglose 30/10/10/0 |
-| **CP-HU12-03:** agrupa productos y resta reembolsos procesados | Reembolso procesado S/15 y ventas S/50 | Neto S/35; producto p1 con 2 unidades y S/30 vendidos |
-| **CP-HU12-04:** resume la cantidad de incidencias por motivo | Dos incidencias Producto incorrecto y una Otro | Resumen 2 y 1 |
+[Ver las pruebas de esta historia](../tests/hu-12-reportes.test.js)
 
-### Trazabilidad de la automatización
-
-| ID | CA relacionado | Tipo de caso | Archivo automatizado | Estado |
-|---|---|---|---|---|
-| CP-HU12-01 | CA01 | Válido e inválido | `tests/hu-12-reportes.test.js` | Aprobada |
-| CP-HU12-02 | CA04 y CA05 | Válido | `tests/hu-12-reportes.test.js` | Aprobada |
-| CP-HU12-03 | CA06 y CA07 | Válido | `tests/hu-12-reportes.test.js` | Aprobada |
-| CP-HU12-04 | CA11 | Válido | `tests/hu-12-reportes.test.js` | Aprobada |
+| ID / CA | Caso de prueba | Descripción y datos de prueba | Resultado esperado | Resultado obtenido | Estado |
+|---|---|---|---|---|---|
+| CP-HU12-01 / CA01 | valida rangos cronológicos | Rango 01–27 y rango 27–01 | Acepta el cronológico y rechaza el invertido | 01–27 → `true`; 27–01 → `false`. | Aprobada |
+| CP-HU12-02 / CA04 y CA05 | calcula ventas y modalidades, excluyendo el costo de reposición | Venta Efectivo S/30, híbrida S/20 y reposición S/0 | Ventas S/50 y desglose 30/10/10/0 | S/ 50 brutos: Efectivo 30, Yape 10, Plin 10, Transferencia 0. | Aprobada |
+| CP-HU12-03 / CA06 y CA07 | agrupa productos y resta reembolsos procesados | Reembolso procesado S/15 y ventas S/50 | Neto S/35; producto p1 con 2 unidades y S/30 vendidos | S/ 35 netos; p1 acumuló 2 unidades y S/ 30. | Aprobada |
+| CP-HU12-04 / CA11 | resume la cantidad de incidencias por motivo | Dos incidencias Producto incorrecto y una Otro | Resumen 2 y 1 | Producto incorrecto → 2; Otro → 1. | Aprobada |
 
 ## HU-13: Iniciar Sesión
 
@@ -667,31 +551,20 @@ Como usuario del sistema (administrador, cajera o cocina), quiero iniciar sesió
 | CA09 | **Sesión única por cuenta:** cada cuenta (administrador, cajera o cocina) solo puede tener una sesión activa a la vez. Si se inicia sesión en un nuevo dispositivo, la sesión activa en el dispositivo anterior se cierra automáticamente. | Prueba unitaria |
 | CA10 | **Intentos fallidos sin bloqueo:** el sistema no bloquea la cuenta tras varios intentos fallidos, dado el alcance académico del proyecto. | Requiere interfaz/integración |
 
-### Casos de prueba
+### Resultados de pruebas
 
-| Caso | Datos de prueba | Resultado esperado |
-|---|---|---|
-| **CP-HU13-01:** conserva el correo válido del administrador | ADMIN@empresa.pe | Normaliza correo y reconoce administrador |
-| **CP-HU13-02:** normaliza usuario operativo al dominio corporativo | Cajera01 y cajera01@burger.local | Normaliza ambos al correo corporativo |
-| **CP-HU13-03:** rechaza identificador vacío o inválido | Vacío y abc | Rechaza identificadores inválidos |
-| **CP-HU13-04:** usan un mensaje genérico | Cualquier credencial incorrecta | Mensaje único Credenciales inválidas |
-| **CP-HU13-05:** redirige cada rol a su pantalla | Roles admin, cajera y cocina | Devuelve la ruta principal de cada rol |
-| **CP-HU13-06:** restringe funciones por rol | Cajera frente a permisos cajera/admin | Permite su rol y bloquea otro |
-| **CP-HU13-07:** mantiene una sesión activa con token coincidente | Token abc registrado y actual | Sesión vigente |
-| **CP-HU13-08:** invalida la sesión anterior cuando cambia el token | Token anterior frente a token nuevo | Invalida la sesión anterior |
+[Ver las pruebas de esta historia](../tests/hu-13-iniciar-sesion.test.js)
 
-### Trazabilidad de la automatización
-
-| ID | CA relacionado | Tipo de caso | Archivo automatizado | Estado |
-|---|---|---|---|---|
-| CP-HU13-01 | CA02 | Válido | `tests/hu-13-iniciar-sesion.test.js` | Aprobada |
-| CP-HU13-02 | CA03 | Válido | `tests/hu-13-iniciar-sesion.test.js` | Aprobada |
-| CP-HU13-03 | CA04 | Válido e inválido | `tests/hu-13-iniciar-sesion.test.js` | Aprobada |
-| CP-HU13-04 | CA04 y CA05 | Inválido | `tests/hu-13-iniciar-sesion.test.js` | Aprobada |
-| CP-HU13-05 | CA06 | Válido | `tests/hu-13-iniciar-sesion.test.js` | Aprobada |
-| CP-HU13-06 | CA07 | Válido e inválido | `tests/hu-13-iniciar-sesion.test.js` | Aprobada |
-| CP-HU13-07 | CA08 | Válido | `tests/hu-13-iniciar-sesion.test.js` | Aprobada |
-| CP-HU13-08 | CA09 | Inválido | `tests/hu-13-iniciar-sesion.test.js` | Aprobada |
+| ID / CA | Caso de prueba | Descripción y datos de prueba | Resultado esperado | Resultado obtenido | Estado |
+|---|---|---|---|---|---|
+| CP-HU13-01 / CA02 | conserva el correo válido del administrador | ADMIN@empresa.pe | Normaliza correo y reconoce administrador | `admin@empresa.pe`, identificador válido y `esAdmin = true`. | Aprobada |
+| CP-HU13-02 / CA03 | normaliza usuario operativo al dominio corporativo | Cajera01 y cajera01@burger.local | Normaliza ambos al correo corporativo | Cajera01 produjo `cajera01@burger.local`; el identificador completo también fue válido. | Aprobada |
+| CP-HU13-03 / CA04 | rechaza identificador vacío o inválido | Vacío y abc | Rechaza identificadores inválidos | Ambos dieron `false`. | Aprobada |
+| CP-HU13-04 / CA04 y CA05 | usan un mensaje genérico | Cualquier credencial incorrecta | Mensaje único Credenciales inválidas | La función devolvió «Credenciales inválidas.». | Aprobada |
+| CP-HU13-05 / CA06 | redirige cada rol a su pantalla | Roles admin, cajera y cocina | Devuelve la ruta principal de cada rol | Rutas `../admin/index.html`, `../cajera/registrar-pedido.html` y `../cocina/pedidos.html`. | Aprobada |
+| CP-HU13-06 / CA07 | restringe funciones por rol | Cajera frente a permisos cajera/admin | Permite su rol y bloquea otro | Permiso cajera → `true`; permiso admin → `false`. | Aprobada |
+| CP-HU13-07 / CA08 | mantiene una sesión activa con token coincidente | Token abc registrado y actual | Sesión vigente | Vigencia `true`. | Aprobada |
+| CP-HU13-08 / CA09 | invalida la sesión anterior cuando cambia el token | Token anterior frente a token nuevo | Invalida la sesión anterior | Vigencia `false`. | Aprobada |
 
 ## HU-14: Cerrar Sesión
 
@@ -716,19 +589,14 @@ Como usuario del sistema (administrador, cajera o cocina), quiero cerrar mi sesi
 | CA04 | **Acceso bloqueado tras el cierre:** una vez cerrada la sesión, el sistema no permite volver a ninguna pantalla protegida sin iniciar sesión nuevamente (por ejemplo, usando el botón "atrás" del navegador). | Prueba unitaria |
 | CA05 | **No afecta otras sesiones:** cerrar sesión en un dispositivo no tiene efecto sobre las sesiones de los otros roles; cada cuenta gestiona su propia sesión de forma independiente. | Prueba unitaria |
 
-### Casos de prueba
+### Resultados de pruebas
 
-| Caso | Datos de prueba | Resultado esperado |
-|---|---|---|
-| **CP-HU14-01:** una sesión sin token deja de ser válida | Token actual vacío y registrado abc | Sesión inválida |
-| **CP-HU14-02:** el cierre de una cuenta no invalida otra sesión | Cajera sin token y cocina con token coincidente | Cierra cajera sin afectar cocina |
+[Ver las pruebas de esta historia](../tests/hu-14-cerrar-sesion.test.js)
 
-### Trazabilidad de la automatización
-
-| ID | CA relacionado | Tipo de caso | Archivo automatizado | Estado |
-|---|---|---|---|---|
-| CP-HU14-01 | CA04 | Inválido | `tests/hu-14-cerrar-sesion.test.js` | Aprobada |
-| CP-HU14-02 | CA05 | Válido | `tests/hu-14-cerrar-sesion.test.js` | Aprobada |
+| ID / CA | Caso de prueba | Descripción y datos de prueba | Resultado esperado | Resultado obtenido | Estado |
+|---|---|---|---|---|---|
+| CP-HU14-01 / CA04 | una sesión sin token deja de ser válida | Token actual vacío y registrado abc | Sesión inválida | Vigencia `false` con token vacío. | Aprobada |
+| CP-HU14-02 / CA05 | el cierre de una cuenta no invalida otra sesión | Cajera sin token y cocina con token coincidente | Cierra cajera sin afectar cocina | Cajera → `false`; cocina → `true`. | Aprobada |
 
 ## HU-15: Recuperar Contraseña (Admin)
 
@@ -755,19 +623,14 @@ Como administrador, quiero recuperar el acceso a mi cuenta cuando olvide mi cont
 | CA06 | **Cierre de sesiones anteriores:** al restablecer la contraseña, cualquier sesión activa previa del administrador se cierra, en línea con la regla de sesión única (HU-13, CA09). | Requiere interfaz/integración |
 | CA07 | **Sin esta opción para cajera y cocina:** como sus cuentas no tienen correo asociado, no cuentan con esta función; si olvidan su contraseña, el administrador elimina y recrea su cuenta (ver HU-10). | Prueba unitaria |
 
-### Casos de prueba
+### Resultados de pruebas
 
-| Caso | Datos de prueba | Resultado esperado |
-|---|---|---|
-| **CP-HU15-01:** permite mostrar recuperación al correo del administrador | admin@empresa.pe | Permite recuperación |
-| **CP-HU15-02:** no permite recuperación a cajera ni cocina | cajera01 y cocina01@burger.local | No permite recuperación |
+[Ver las pruebas de esta historia](../tests/hu-15-recuperar-password.test.js)
 
-### Trazabilidad de la automatización
-
-| ID | CA relacionado | Tipo de caso | Archivo automatizado | Estado |
-|---|---|---|---|---|
-| CP-HU15-01 | CA01 | Válido | `tests/hu-15-recuperar-password.test.js` | Aprobada |
-| CP-HU15-02 | CA07 | Inválido | `tests/hu-15-recuperar-password.test.js` | Aprobada |
+| ID / CA | Caso de prueba | Descripción y datos de prueba | Resultado esperado | Resultado obtenido | Estado |
+|---|---|---|---|---|---|
+| CP-HU15-01 / CA01 | permite mostrar recuperación al correo del administrador | admin@empresa.pe | Permite recuperación | Elegibilidad `true`. | Aprobada |
+| CP-HU15-02 / CA07 | no permite recuperación a cajera ni cocina | cajera01 y cocina01@burger.local | No permite recuperación | Ambos identificadores dieron `false`. | Aprobada |
 
 ## Tarjetas de responsabilidades y colaboraciones
 
