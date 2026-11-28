@@ -506,6 +506,7 @@ test.describe.serial('E2E funcional autenticado con Firebase Emulator', () => {
     await cajera.locator('#btn-emitir').click();
     await expect(cajera).toHaveURL(/\/cajera\/comprobante\.html\?id=.+/, { timeout: 20000 });
     const pedidoId = new URL(cajera.url()).searchParams.get('id');
+    await expect(cajera.locator('#ticket-content')).toContainText(/B001-\d{6}/, { timeout: 20000 });
     const textoTicket = await cajera.locator('#ticket-content').innerText();
     const comprobante = textoTicket.match(/B001-\d{6}/)?.[0];
     expect(comprobante).toBeTruthy();
