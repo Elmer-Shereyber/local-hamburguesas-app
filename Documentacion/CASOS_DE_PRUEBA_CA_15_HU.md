@@ -673,3 +673,40 @@ Como administrador, quiero recuperar el acceso a mi cuenta cuando olvide mi cont
 ## Correspondencia entre documentación y código
 
 Cada caso usa el mismo identificador en este documento y en Vitest. Por ejemplo, `CP-HU01-03` puede buscarse directamente en `tests/hu-01-registrar-pedido.test.js`.
+
+## Resumen de resultados y cumplimiento funcional
+
+| Indicador | Resultado |
+|---|---|
+| Casos unitarios ejecutados | 88 aprobados · 0 fallidos · 0 omitidos |
+| Aprobación de la suite | **100 %** (88 de 88 casos) |
+| Historias con evidencia unitaria | **15 de 15** |
+| CA con al menos una regla verificada por la suite | **77 de 153 (50,3 %)** |
+| CA clasificados como «Requiere interfaz/integración» | **76 de 153 (49,7 %)** |
+
+### Resultados por historia
+
+| Historia | Casos aprobados / ejecutados | CA documentados | CA con evidencia unitaria | CA que requieren interfaz/integración |
+|---|---:|---:|---:|---:|
+| HU-01 · Registrar pedido | 10/10 | 10 | 10 | 0 |
+| HU-02 · Emitir comprobante de pago | 10/10 | 14 | 8 | 6 |
+| HU-03 · Consultar pedidos | 10/10 | 15 | 10 | 5 |
+| HU-04 · Registrar reposición | 7/7 | 11 | 4 | 7 |
+| HU-05 · Solicitar devolución | 7/7 | 10 | 6 | 4 |
+| HU-06 · Procesar devolución | 6/6 | 11 | 5 | 6 |
+| HU-07 · Gestionar disponibilidad de productos | 2/2 | 8 | 1 | 7 |
+| HU-08 · Visualizar pedidos en cocina | 3/3 | 9 | 3 | 6 |
+| HU-09 · Actualizar estado de productos | 6/6 | 11 | 4 | 7 |
+| HU-10 · Gestionar usuarios | 6/6 | 9 | 4 | 5 |
+| HU-11 · Gestionar productos | 5/5 | 9 | 4 | 5 |
+| HU-12 · Consultar ganancias e incidencias | 4/4 | 14 | 6 | 8 |
+| HU-13 · Iniciar Sesión | 8/8 | 10 | 8 | 2 |
+| HU-14 · Cerrar Sesión | 2/2 | 5 | 2 | 3 |
+| HU-15 · Recuperar Contraseña (Admin) | 2/2 | 7 | 2 | 5 |
+| **Total** | **88/88** | **153** | **77** | **76** |
+
+### Estado final
+
+**Suite de pruebas unitarias aprobada. Cumplimiento funcional integral de las 15 HU parcialmente verificado.** Cada criterio de la cuarta columna cuenta con evidencia sobre la regla ejercitada. Un criterio compuesto puede requerir comprobaciones adicionales. Por ejemplo, en HU-01/CA01 se verificó que la función rechaza un producto sin disponibilidad. Para confirmar el criterio completo también se debe observar ese producto deshabilitado en el catálogo de caja.
+
+Los 76 criterios de la última columna quedan pendientes de acreditación en este informe. Entre ellos están la actualización de un pedido entre cocina y caja y el uso único del enlace de recuperación. Para cerrar cada uno se debe vincular el CA con el caso de interfaz o integración correspondiente, su resultado observado y su estado. El porcentaje de cumplimiento funcional completo queda pendiente de esa revisión.
