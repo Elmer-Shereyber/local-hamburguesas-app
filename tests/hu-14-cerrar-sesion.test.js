@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { sesionSigueVigente } from '../public/shared/auth-rules.js';
 
 describe('HU-14 Cerrar sesión', () => {
-  it('CP-HU14-01 | CA02 y CA04 una sesión sin token deja de ser válida', () => {
+  it('CP-HU14-01 | CA04 una sesión sin token deja de ser válida', () => {
     expect(sesionSigueVigente({ tokenSesionActual: '', tokenSesionRegistrado: 'abc' })).toBe(false);
   });
 

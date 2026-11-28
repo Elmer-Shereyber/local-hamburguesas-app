@@ -39,7 +39,7 @@ describe('HU-02 Emitir comprobante de pago', () => {
     expect(resultado.errores).toEqual(expect.arrayContaining(['DNI_INVALIDO', 'NOMBRE_NO_VALIDADO']));
   });
 
-  it('CP-HU02-06 | CA08 mantiene la boleta sin desglose tributario en los datos del cliente', () => {
+  it('CP-HU02-06 | CA05 crea una boleta simple sin datos del cliente', () => {
     expect(crearDatosCliente({ total: 20, tipoComprobante: 'Boleta', tipoBoleta: 'simple' })).toBeNull();
   });
 

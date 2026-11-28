@@ -41,7 +41,7 @@ describe('HU-04 Registrar reposición', () => {
     expect(puedeReponerProducto(producto, { id: 'p1', disponible: false })).toBe(false);
   });
 
-  it('CP-HU04-07 | CA10 limita la cantidad al producto afectado', () => {
+  it('CP-HU04-07 | CA01 rechaza una cantidad de reposición igual a cero', () => {
     expect(cantidadReclamoValida(producto, 1)).toBe(true);
     expect(cantidadReclamoValida(producto, 0)).toBe(false);
   });

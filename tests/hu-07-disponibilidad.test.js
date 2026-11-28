@@ -6,7 +6,7 @@ describe('HU-07 Gestionar disponibilidad de productos', () => {
     expect(alternarDisponibilidad({ id: 'p1', disponible: true })).toEqual({ id: 'p1', disponible: false });
   });
 
-  it('CP-HU07-02 | CA04 no modifica el objeto original', () => {
+  it('CP-HU07-02 | CA02 cambia el estado sin modificar el objeto original', () => {
     const original = { id: 'p1', disponible: true };
     const actualizado = alternarDisponibilidad(original);
     expect(original.disponible).toBe(true);

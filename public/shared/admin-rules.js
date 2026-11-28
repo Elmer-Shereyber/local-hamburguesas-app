@@ -51,6 +51,9 @@ export function calcularResumenVentas(pedidos, devoluciones = [], inicio, fin) {
       pagos.Plin += Number(p.pagoHibridoPlin) || 0;
       pagos.Transferencia += Number(p.pagoHibridoTransferencia) || 0;
     } else if (pagos[p.modalidadPago] !== undefined) pagos[p.modalidadPago] += total;
+    // Las reposiciones sin costo son incidencias, no ventas por producto.
+    // CA04 y CA06: no incrementan ni el monto ni la cantidad vendida.
+    if (p.esReposicion && total === 0) continue;
     for (const item of p.productos || []) {
       if (!item.id) continue;
       const actual = productos.get(item.id) || { id: item.id, nombre: item.nombre, cantidad: 0, monto: 0 };

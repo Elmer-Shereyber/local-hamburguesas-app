@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { puedeRecuperarPassword } from '../public/shared/auth-rules.js';
 
 describe('HU-15 Recuperar contraseña', () => {
-  it('CP-HU15-01 | CA01 y CA02 permite recuperación al correo del administrador', () => {
+  it('CP-HU15-01 | CA01 permite mostrar recuperación al correo del administrador', () => {
     expect(puedeRecuperarPassword('admin@empresa.pe')).toBe(true);
   });
 

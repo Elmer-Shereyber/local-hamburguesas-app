@@ -23,7 +23,7 @@ describe('HU-12 Consultar ganancias e incidencias', () => {
     const devoluciones = [{ estado: 'Procesada', monto: 15, fechaProcesado: '2026-11-27T12:00:00Z' }];
     const resumen = calcularResumenVentas(pedidos, devoluciones, '2026-11-27', '2026-11-27');
     expect(resumen.neto).toBe(35);
-    expect(resumen.productos.find((p) => p.id === 'p1')).toMatchObject({ cantidad: 3, monto: 45 });
+    expect(resumen.productos.find((p) => p.id === 'p1')).toMatchObject({ cantidad: 2, monto: 30 });
   });
 
   it('CP-HU12-04 | CA11 resume la cantidad de incidencias por motivo', () => {
