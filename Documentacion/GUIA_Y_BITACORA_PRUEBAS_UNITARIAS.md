@@ -623,6 +623,8 @@ Las suites de accesibilidad y compatibilidad quedaron preparadas para ejecutarse
 
 La primera auditoría de accesibilidad ejecutó las 11 rutas y detectó principalmente contraste insuficiente: el rojo `#EF4444` alcanzaba 3.76:1 frente al mínimo 4.5:1, además de variantes claras de azul, verde y ámbar. Se oscureció la paleta compartida y los textos de acción específicos sin cambiar la estructura ni las funciones del sistema. Queda pendiente repetir axe-core para descubrir cualquier observación que la consola hubiera truncado.
 
+La segunda auditoría aprobó 10 de 11 rutas. La única observación restante fue crítica: `#tipo-boleta` carecía de nombre accesible porque su texto visible no estaba asociado mediante `for`. Se vinculó `label[for="tipo-boleta"]` con el selector y quedó pendiente la confirmación final.
+
 ## Formato para documentar cada prueba
 
 Cada prueba añadida se registrará con esta información:
