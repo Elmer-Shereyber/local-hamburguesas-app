@@ -594,6 +594,8 @@ La cuarta ejecución aprobó 23 E2E y alcanzó por primera vez la prueba de sesi
 
 La quinta ejecución aprobó 27 E2E, incluida la sesión única. La prueba de devolución parcial intentó extraer el número de boleta mientras el ticket aún mostraba su estado de carga. Se añadió una espera explícita por el patrón `B001-000000` antes de leer y reutilizar el comprobante en la Nota de Crédito tipo 07.
 
+La sexta ejecución aprobó 29 E2E. Auth Emulator cambió correctamente la contraseña y rechazó la anterior, pero conservó el token de la sesión ya abierta. Firebase documenta que el restablecimiento revoca los tokens en producción, aunque un ID token emitido puede permanecer activo hasta expirar si no se valida su revocación desde backend. La E2E local comprueba por ello la clave anterior, la nueva y la expulsión de la sesión previa mediante la rotación del token de sesión al volver a ingresar.
+
 ## Formato para documentar cada prueba
 
 Cada prueba añadida se registrará con esta información:
@@ -663,3 +665,4 @@ Ejecutar las tres suites completas en Windows y registrar el resultado final. De
 - **2026-11-27:** la tercera ejecución detectó una validación pendiente de la página abandonada; se vinculó la protección a `pagehide` y Playwright espera la señal estable `data-auth-ready`.
 - **2026-11-27:** la cuarta ejecución aprobó 23 E2E antes de detectar el orden incorrecto entre aviso y cierre forzado; se muestra el diálogo antes de iniciar la redirección.
 - **2026-11-27:** la quinta ejecución aprobó 27 E2E; se corrigió la sincronización del ticket antes de validar la devolución parcial y su Nota de Crédito tipo 07.
+- **2026-11-27:** la sexta ejecución aprobó 29 E2E; la recuperación se adaptó a la limitación de revocación del Auth Emulator sin atribuirle el comportamiento del backend productivo.
